@@ -22,163 +22,144 @@
     <a href="index.html" class="back-btn">Back to Home</a>
 
     <script>
-        const c = document.getElementById('c'), ctx = c.getContext('2d');
-        let bird = { x: 50, y: 150, v: 0, g: 0.22, jump: 4.2, r: 14, charge: 0 };
-        let pipes = [], clouds = [], frame = 0, score = 0, gameOver = false, isHolding = false;
+const c = document.getElementById('c'), ctx = c.getContext('2d');
+let bird = { x: 50, y: 150, v: 0, g: 0.22, jump: 4.2, thrust: 0.5, r: 14 };
+let pipes = [], clouds = [], frame = 0, score = 0, gameOver = false, isHolding = false;
 
-        function reset() {
-            bird.y = 150; bird.v = 0; bird.charge = 0; pipes = []; clouds = []; score = 0; frame = 0; gameOver = false;
+function reset() {
+    bird.y = 150; bird.v = 0; pipes = []; clouds = []; score = 0; frame = 0; gameOver = false;
+}
+
+function drawBird(x, y, r, v) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(Math.min(Math.PI / 4, Math.max(-Math.PI / 4, v * 0.1)));
+    
+    // Body
+    ctx.fillStyle = isHolding ? '#FFD700' : 'yellow';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r, r * 0.8, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = 'black'; ctx.lineWidth = 2; ctx.stroke();
+
+    // Wing (moves faster when rising)
+    let wingWiggle = isHolding ? Math.sin(frame * 0.5) * 5 : 0;
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.ellipse(-5, 2 + wingWiggle, 8, 5, v * 0.1, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+
+    // Eye
+    ctx.fillStyle = 'white';
+    ctx.beginPath(); ctx.arc(6, -4, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = 'black';
+    ctx.beginPath(); ctx.arc(8, -4, 2, 0, Math.PI * 2); ctx.fill();
+
+    // Beak
+    ctx.fillStyle = 'orange';
+    ctx.beginPath();
+    ctx.moveTo(12, -2); ctx.lineTo(22, 2); ctx.lineTo(12, 6);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    
+    ctx.restore();
+}
+
+function drawPipe(x, y, w, gap) {
+    ctx.fillStyle = '#73bf2e';
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 2;
+    // Top
+    ctx.fillRect(x, 0, w, y); ctx.strokeRect(x, 0, w, y);
+    ctx.fillRect(x - 5, y - 20, w + 10, 20); ctx.strokeRect(x - 5, y - 20, w + 10, 20);
+    // Bottom
+    ctx.fillRect(x, y + gap, w, c.height); ctx.strokeRect(x, y + gap, w, c.height);
+    ctx.fillRect(x - 5, y + gap, w + 10, 20); ctx.strokeRect(x - 5, y + gap, w + 10, 20);
+}
+
+function drawCloud(cl) {
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.beginPath();
+    ctx.arc(cl.x, cl.y, cl.r, 0, Math.PI * 2);
+    ctx.arc(cl.x + 15, cl.y - 10, cl.r, 0, Math.PI * 2);
+    ctx.arc(cl.x + 30, cl.y, cl.r, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+function loop() {
+    if (!gameOver) {
+        // Continuous Thrust Logic
+        if (isHolding) {
+            // Apply upward force every frame the button is held
+            bird.v -= bird.thrust; 
+            // Cap the upward speed so it doesn't get glitchy
+            if (bird.v < -7) bird.v = -7; 
         }
 
-        function drawBird(x, y, r, v) {
-            ctx.save();
-            ctx.translate(x, y);
-            ctx.rotate(Math.min(Math.PI / 4, Math.max(-Math.PI / 4, v * 0.1)));
-            
-            // Body
-            ctx.fillStyle = bird.charge > 10 ? '#FFD700' : 'yellow';
-            ctx.beginPath();
-            ctx.ellipse(0, 0, r, r * 0.8, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = 'black'; ctx.lineWidth = 2; ctx.stroke();
+        // Physics
+        bird.v += bird.g;
+        bird.y += bird.v;
 
-            // Wing
-            ctx.fillStyle = 'white';
-            ctx.beginPath();
-            ctx.ellipse(-5, 2, 8, 5, v * 0.1, 0, Math.PI * 2);
-            ctx.fill(); ctx.stroke();
-
-            // Eye
-            ctx.fillStyle = 'white';
-            ctx.beginPath(); ctx.arc(6, -4, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-            ctx.fillStyle = 'black';
-            ctx.beginPath(); ctx.arc(8, -4, 2, 0, Math.PI * 2); ctx.fill();
-
-            // Beak
-            ctx.fillStyle = 'orange';
-            ctx.beginPath();
-            ctx.moveTo(12, -2); ctx.lineTo(22, 2); ctx.lineTo(12, 6);
-            ctx.closePath(); ctx.fill(); ctx.stroke();
-            
-            ctx.restore();
+        // Spawning
+        if (frame % 100 === 0) {
+            let h = Math.random() * (c.height - 250) + 50;
+            pipes.push({ x: c.width, y: h, w: 50, gap: 125 });
+        }
+        if (frame % 120 === 0) {
+            clouds.push({ x: c.width + 50, y: Math.random() * 150 + 50, r: 20, s: Math.random() + 0.5 });
         }
 
-        function drawPipe(x, y, w, gap) {
-            ctx.fillStyle = '#73bf2e';
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 2;
+        pipes.forEach(p => p.x -= 2);
+        clouds.forEach(cl => cl.x -= cl.s);
+        pipes = pipes.filter(p => p.x + p.w + 10 > 0);
+        clouds = clouds.filter(cl => cl.x + 50 > 0);
 
-            // Top Pipe
-            ctx.fillRect(x, 0, w, y);
-            ctx.strokeRect(x, 0, w, y);
-            // Lip for Top Pipe
-            ctx.fillRect(x - 5, y - 20, w + 10, 20);
-            ctx.strokeRect(x - 5, y - 20, w + 10, 20);
-
-            // Bottom Pipe
-            ctx.fillRect(x, y + gap, w, c.height);
-            ctx.strokeRect(x, y + gap, w, c.height);
-            // Lip for Bottom Pipe
-            ctx.fillRect(x - 5, y + gap, w + 10, 20);
-            ctx.strokeRect(x - 5, y + gap, w + 10, 20);
-        }
-
-        function drawCloud(cl) {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-            ctx.beginPath();
-            ctx.arc(cl.x, cl.y, cl.r, 0, Math.PI * 2);
-            ctx.arc(cl.x + 15, cl.y - 10, cl.r, 0, Math.PI * 2);
-            ctx.arc(cl.x + 30, cl.y, cl.r, 0, Math.PI * 2);
-            ctx.fill();
-        }
-
-        function loop() {
-            if (!gameOver) {
-                // Charge Logic
-                if (isHolding) {
-                    bird.charge = Math.min(bird.charge + 1, 35);
-                }
-
-                // Physics
-                bird.v += bird.g;
-                bird.y += bird.v;
-
-                // Spawning
-                if (frame % 100 === 0) {
-                    let h = Math.random() * (c.height - 250) + 50;
-                    pipes.push({ x: c.width, y: h, w: 50, gap: 120 });
-                }
-                if (frame % 120 === 0) {
-                    clouds.push({ x: c.width + 50, y: Math.random() * 150 + 50, r: 20, s: Math.random() + 0.5 });
-                }
-
-                pipes.forEach(p => p.x -= 2);
-                clouds.forEach(cl => cl.x -= cl.s);
-                pipes = pipes.filter(p => p.x + p.w + 10 > 0);
-                clouds = clouds.filter(cl => cl.x + 50 > 0);
-
-                // Collision
-                if (bird.y + bird.r > c.height || bird.y - bird.r < 0) gameOver = true;
-                pipes.forEach(p => {
-                    if (bird.x + bird.r > p.x && bird.x - bird.r < p.x + p.w) {
-                        if (bird.y - bird.r < p.y || bird.y + bird.r > p.y + p.gap) gameOver = true;
-                    }
-                    if (p.x === bird.x) score++;
-                });
+        if (bird.y + bird.r > c.height || bird.y - bird.r < 0) gameOver = true;
+        pipes.forEach(p => {
+            if (bird.x + bird.r > p.x && bird.x - bird.r < p.x + p.w) {
+                if (bird.y - bird.r < p.y || bird.y + bird.r > p.y + p.gap) gameOver = true;
             }
+            if (p.x === bird.x) score++;
+        });
+    }
 
-            // Draw Background
-            ctx.fillStyle = '#4ec0ca'; ctx.fillRect(0, 0, c.width, c.height);
-            clouds.forEach(drawCloud);
+    ctx.fillStyle = '#4ec0ca'; ctx.fillRect(0, 0, c.width, c.height);
+    clouds.forEach(drawCloud);
+    pipes.forEach(p => drawPipe(p.x, p.y, p.w, p.gap));
+    drawBird(bird.x, bird.y, bird.r, bird.v);
 
-            // Draw Entities
-            pipes.forEach(p => drawPipe(p.x, p.y, p.w, p.gap));
-            drawBird(bird.x, bird.y, bird.r, bird.v);
+    ctx.fillStyle = 'white'; ctx.font = 'bold 35px Arial'; ctx.fillText(score, 10, 45);
+    
+    if (gameOver) {
+        ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(0,0,c.width,c.height);
+        ctx.fillStyle = 'white'; ctx.textAlign = "center";
+        ctx.font = '40px Arial'; ctx.fillText("GAME OVER", c.width/2, 240);
+        ctx.font = '20px Arial'; ctx.fillText("Tap to Restart", c.width/2, 280);
+        ctx.textAlign = "start";
+    }
 
-            // UI
-            ctx.fillStyle = 'white'; ctx.font = 'bold 35px Arial'; ctx.fillText(score, 10, 45);
-            if (bird.charge > 5) {
-                ctx.fillStyle = 'rgba(255, 255, 0, 0.5)';
-                ctx.fillRect(bird.x - 15, bird.y + 20, bird.charge, 5);
-            }
-            
-            if (gameOver) {
-                ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(0,0,c.width,c.height);
-                ctx.fillStyle = 'white'; ctx.textAlign = "center";
-                ctx.font = '40px Arial'; ctx.fillText("GAME OVER", c.width/2, 240);
-                ctx.font = '20px Arial'; ctx.fillText("Tap to Restart", c.width/2, 280);
-                ctx.textAlign = "start";
-            }
+    frame++;
+    requestAnimationFrame(loop);
+}
 
-            frame++;
-            requestAnimationFrame(loop);
-        }
+// Controls
+const startAction = (e) => {
+    if (e.type === 'touchstart') e.preventDefault();
+    if (gameOver) { reset(); return; }
+    isHolding = true;
+    // Initial hop on first click
+    bird.v = -bird.jump;
+};
 
-        const handleActionStart = (e) => {
-            if (e.type === 'touchstart') e.preventDefault();
-            if (gameOver) { reset(); return; }
-            isHolding = true;
-        };
+const stopAction = () => { isHolding = false; };
 
-        const handleActionEnd = () => {
-            if (!isHolding) return;
-            if (bird.charge > 15) {
-                bird.v = -bird.jump * 2.2; // Super jump!
-            } else {
-                bird.v = -bird.jump; // Normal jump
-            }
-            bird.charge = 0;
-            isHolding = false;
-        };
+window.addEventListener('keydown', e => { if (e.code === 'Space') startAction(e); });
+window.addEventListener('keyup', e => { if (e.code === 'Space') stopAction(); });
+c.addEventListener('mousedown', startAction);
+window.addEventListener('mouseup', stopAction);
+c.addEventListener('touchstart', startAction);
+window.addEventListener('touchend', stopAction);
 
-        window.addEventListener('keydown', e => { if (e.code === 'Space') handleActionStart(e); });
-        window.addEventListener('keyup', e => { if (e.code === 'Space') handleActionEnd(); });
-        c.addEventListener('mousedown', handleActionStart);
-        window.addEventListener('mouseup', handleActionEnd);
-        c.addEventListener('touchstart', handleActionStart);
-        window.addEventListener('touchend', handleActionEnd);
-
-        loop();
+loop();
     </script>
 </body>
 </html>
