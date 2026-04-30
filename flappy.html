@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Bird</title>
+    <style>
+        body { margin: 0; text-align: center; background: #70c5ce; font-family: sans-serif; overflow: hidden; }
+        canvas { display: block; margin: 20px auto; border: 4px solid #fff; border-radius: 8px; background: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .ui { color: white; text-shadow: 2px 2px #000; }
+        .back-btn { text-decoration: none; color: white; background: #333; padding: 10px 20px; border-radius: 5px; display: inline-block; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="ui">
+        <h1>Flappy Bird</h1>
+        <p>Press <strong>Space</strong> or <strong>Tap</strong> to Jump</p>
+    </div>
+    <canvas id="c" width="320" height="480"></canvas>
+    <br>
+    <a href="index.html" class="back-btn">Back to Word Solver</a>
+
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d');
+        let bird = { x: 50, y: 150, v: 0, g: 0.25, jump: 4.5, r: 12 };
+        let pipes = [], frame = 0, score = 0, gameOver = false;
+
+        function reset() {
+            bird.y = 150; bird.v = 0; pipes = []; score = 0; frame = 0; gameOver = false;
+        }
+
+        function loop() {
+            if (!gameOver) {
+                // Physics
+                bird.v += bird.g;
+                bird.y += bird.v;
+
+                // Pipes
+                if (frame % 90 === 0) {
+                    let h = Math.random() * (c.height - 200) + 50;
+                    pipes.push({ x: c.width, y: h, w: 50 });
+                }
+                pipes.forEach(p => p.x -= 2);
+                pipes = pipes.filter(p => p.x + p.w > 0);
+
+                // Collision
+                if (bird.y + bird.r > c.height || bird.y - bird.r < 0) gameOver = true;
+                pipes.forEach(p => {
+                    if (bird.x + bird.r > p.x && bird.x - bird.r < p.x + p.w) {
+                        if (bird.y - bird.r < p.y || bird.y + bird.r > p.y + 100) gameOver = true;
+                    }
+                    if (p.x === bird.x) score++;
+                });
+            }
+
+            // Draw
+            ctx.fillStyle = '#70c5ce'; ctx.fillRect(0, 0, c.width, c.height);
+            ctx.fillStyle = 'yellow'; ctx.beginPath(); ctx.arc(bird.x, bird.y, bird.r, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = 'green';
+            pipes.forEach(p => {
+                ctx.fillRect(p.x, 0, p.w, p.y);
+                ctx.fillRect(p.x, p.y + 100, p.w, c.height);
+            });
+            ctx.fillStyle = 'white'; ctx.font = '30px Arial'; ctx.fillText(score, 10, 40);
+            
+            if (gameOver) {
+                ctx.fillText("GAME OVER", 70, 240);
+                ctx.font = '15px Arial'; ctx.fillText("Tap to Restart", 115, 270);
+            }
+
+            frame++;
+            requestAnimationFrame(loop);
+        }
+
+        window.addEventListener('keydown', e => { if (e.code === 'Space') gameOver ? reset() : bird.v = -bird.jump; });
+        c.addEventListener('touchstart', e => { e.preventDefault(); gameOver ? reset() : bird.v = -bird.jump; });
+        loop();
+    </script>
+</body>
+</html>
