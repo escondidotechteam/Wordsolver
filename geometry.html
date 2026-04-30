@@ -3,58 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dash Lite + Editor</title>
+    <title>Dash Pro + Editor</title>
     <style>
-        body { margin: 0; background: #222; color: white; font-family: sans-serif; text-align: center; overflow: hidden; }
-        canvas { display: block; margin: 10px auto; background: #000; border: 2px solid #555; cursor: crosshair; }
-        .menu { margin-top: 10px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
-        button { padding: 8px 15px; cursor: pointer; background: #444; color: white; border: 1px solid #777; border-radius: 4px; }
-        button.active { background: #4A90E2; border-color: #fff; }
-        .save-area { margin-top: 10px; }
-        input { background: #333; color: white; border: 1px solid #555; padding: 5px; width: 250px; }
+        body { margin: 0; background: #1a1a1a; color: white; font-family: sans-serif; text-align: center; overflow: hidden; }
+        canvas { display: block; margin: 10px auto; background: #000; border: 2px solid #444; }
+        .menu { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; padding: 10px; }
+        button { padding: 8px 12px; cursor: pointer; background: #333; color: white; border: 1px solid #555; border-radius: 4px; font-size: 13px; }
+        button.active { background: #2ecc71; border-color: #fff; }
+        .controls-hint { font-size: 12px; color: #aaa; margin-bottom: 5px; }
+        input { background: #222; color: #2ecc71; border: 1px solid #444; padding: 5px; width: 150px; font-family: monospace; }
     </style>
 </head>
 <body>
-    <h2 id="mode-text">Mode: Playing</h2>
+    <div class="controls-hint" id="hint">Mode: Playing | Space: Jump | R: Restart | B: Back Checkpoint</div>
     <canvas id="gameCanvas" width="800" height="400"></canvas>
     
     <div class="menu">
         <button onclick="toggleMode()" id="modeBtn">Switch to Editor</button>
-        <button onclick="resetLevel()">Clear Map</button>
-        <a href="index.html" style="color: #aaa; text-decoration: none; line-height: 35px;">Back to Home</a>
+        <button onclick="resetLevel()" style="background:#e74c3c">Clear All</button>
+        <input type="text" id="levelCode" placeholder="Paste Code Here">
+        <button onclick="importLevel()">Load</button>
+        <button onclick="exportLevel()">Copy Code</button>
+        <a href="index.html" style="color:#aaa; text-decoration:none; padding-top:8px;">Exit</a>
     </div>
 
     <div id="editor-tools" style="display:none;" class="menu">
-        <button class="tool active" onclick="setTool('platform', this)">Platform</button>
+        <button class="tool active" onclick="setTool('platform', this)">Block</button>
         <button class="tool" onclick="setTool('spike', this)">Spike</button>
-        <button class="tool" onclick="setTool('pad', this)">Bounce Pad</button>
-        <button class="tool" onclick="setTool('checkpoint', this)">Checkpoint</button>
-        <div class="save-area">
-            <input type="text" id="levelCode" placeholder="Level Code">
-            <button onclick="exportLevel()">Copy Code</button>
-            <button onclick="importLevel()">Load Code</button>
-        </div>
+        <button class="tool" onclick="setTool('pad', this)">Pad</button>
+        <button class="tool" onclick="setTool('checkpoint', this)">Checkpt</button>
+        <span style="font-size:12px; color:#888; align-self:center;">WASD: Move Cam | Click: Select | Arrows: Resize | Del: Remove</span>
     </div>
 
     <script>
         const cvs = document.getElementById('gameCanvas');
         const ctx = cvs.getContext('2d');
 
-        // Game State
+        // --- STARTER MAP DATA (Paste your code between the quotes) ---
+        const STARTER_MAP = ""; 
+
         let isEditor = false;
         let currentTool = 'platform';
-        let map = []; // {x, y, w, h, type}
+        let map = [];
+        let selectedObj = null;
         let cameraX = 0;
+        let keys = {};
 
-        // Player
-        let player = { x: 50, y: 300, w: 30, h: 30, vy: 0, gravity: 0.6, jump: -12, onGround: false, dead: false, spawnX: 50, spawnY: 300 };
+        let player = { 
+            x: 50, y: 300, w: 30, h: 30, vy: 0, 
+            gravity: 0.7, jump: -11, rotation: 0,
+            dead: false, spawnX: 50, spawnY: 300, 
+            checkpoints: [{x: 50, y: 300}] 
+        };
 
         function toggleMode() {
             isEditor = !isEditor;
-            document.getElementById('mode-text').innerText = isEditor ? "Mode: Editor (Click to Place)" : "Mode: Playing (Space to Jump)";
-            document.getElementById('modeBtn').innerText = isEditor ? "Switch to Play" : "Switch to Editor";
+            document.getElementById('hint').innerText = isEditor ? 
+                "WASD: Move Cam | Click: Place/Select | Arrows: Resize | Del: Delete" : 
+                "Space: Jump | R: Reset to Start | B: Back 1 Checkpoint";
+            document.getElementById('modeBtn').innerText = isEditor ? "Play Level" : "Edit Level";
             document.getElementById('editor-tools').style.display = isEditor ? "flex" : "none";
-            if (!isEditor) resetPlayer();
+            selectedObj = null;
+            if (!isEditor) resetPlayer(true);
         }
 
         function setTool(tool, btn) {
@@ -63,70 +73,96 @@
             btn.classList.add('active');
         }
 
-        // Handle Placement
         cvs.addEventListener('mousedown', (e) => {
             if (!isEditor) return;
             const rect = cvs.getBoundingClientRect();
-            const x = e.clientX - rect.left + cameraX;
-            const y = e.clientY - rect.top;
+            const mouseX = e.clientX - rect.left + cameraX;
+            const mouseY = e.clientY - rect.top;
 
-            if (currentTool === 'platform') map.push({x, y, w: 60, h: 20, type: 'platform'});
-            if (currentTool === 'spike') map.push({x, y: y-20, w: 30, h: 30, type: 'spike'});
-            if (currentTool === 'pad') map.push({x, y, w: 30, h: 10, type: 'pad'});
-            if (currentTool === 'checkpoint') map.push({x, y, w: 20, h: 40, type: 'checkpoint'});
+            // Try selecting first
+            const clicked = map.find(o => mouseX > o.x && mouseX < o.x + o.w && mouseY > o.y && mouseY < o.y + o.h);
+            
+            if (clicked) {
+                selectedObj = clicked;
+            } else {
+                const newObj = { x: mouseX - 15, y: mouseY - 15, w: 30, h: 30, type: currentTool };
+                if(currentTool === 'platform') newObj.w = 60;
+                map.push(newObj);
+                selectedObj = newObj;
+            }
         });
 
-        function resetPlayer() {
-            player.x = player.spawnX;
-            player.y = player.spawnY;
+        function resetPlayer(fullRestart) {
+            if (fullRestart) {
+                player.checkpoints = [{x: 50, y: 300}];
+            }
+            const cp = player.checkpoints[player.checkpoints.length - 1];
+            player.x = cp.x;
+            player.y = cp.y;
             player.vy = 0;
+            player.rotation = 0;
             player.dead = false;
-            cameraX = 0;
         }
 
         function update() {
             if (!isEditor) {
                 player.vy += player.gravity;
                 player.y += player.vy;
-                player.x += 5; // Constant forward speed
+                player.x += 5;
                 cameraX = player.x - 100;
 
-                player.onGround = false;
-
-                // Floor
-                if (player.y + player.h > 380) {
+                let onGround = (player.y + player.h >= 380);
+                if (onGround) {
                     player.y = 380 - player.h;
                     player.vy = 0;
-                    player.onGround = true;
+                    // Snap rotation to 90s on ground
+                    player.rotation = Math.round(player.rotation / 90) * 90;
                 }
 
                 map.forEach(obj => {
-                    // Simple AABB Collision
                     if (player.x < obj.x + obj.w && player.x + player.w > obj.x &&
                         player.y < obj.y + obj.h && player.y + player.h > obj.y) {
                         
                         if (obj.type === 'platform') {
-                            if (player.vy > 0 && player.y + player.h < obj.y + 20) {
+                            if (player.vy > 0 && player.y + player.h < obj.y + 15) {
                                 player.y = obj.y - player.h;
                                 player.vy = 0;
-                                player.onGround = true;
-                            } else {
-                                player.dead = true;
-                            }
-                        } else if (obj.type === 'spike') {
-                            player.dead = true;
-                        } else if (obj.type === 'pad') {
-                            player.vy = -18;
+                                onGround = true;
+                                player.rotation = Math.round(player.rotation / 90) * 90;
+                            } else { player.dead = true; }
+                        } else if (obj.type === 'spike') { player.dead = true;
+                        } else if (obj.type === 'pad') { player.vy = -16;
                         } else if (obj.type === 'checkpoint') {
-                            player.spawnX = obj.x;
-                            player.spawnY = obj.y - 10;
+                            const last = player.checkpoints[player.checkpoints.length-1];
+                            if (last.x !== obj.x) player.checkpoints.push({x: obj.x, y: obj.y});
                         }
                     }
                 });
 
-                if (player.dead) resetPlayer();
-            }
+                if (keys['Space'] && onGround) {
+                    player.vy = player.jump;
+                }
+                if (!onGround) player.rotation += 4;
+                if (player.dead) resetPlayer(false);
 
+            } else {
+                // Editor Movement
+                if (keys['KeyA']) cameraX -= 8;
+                if (keys['KeyD']) cameraX += 8;
+                if (keys['KeyW']) console.log("Up"); // Reserved for future verticality
+                
+                // Object manipulation
+                if (selectedObj) {
+                    if (keys['ArrowRight']) selectedObj.w += 2;
+                    if (keys['ArrowLeft']) selectedObj.w = Math.max(10, selectedObj.w - 2);
+                    if (keys['ArrowUp']) { selectedObj.y -= 2; selectedObj.h += 2; }
+                    if (keys['ArrowDown']) selectedObj.h = Math.max(10, selectedObj.h - 2);
+                    if (keys['Delete'] || keys['Backspace']) {
+                        map = map.filter(o => o !== selectedObj);
+                        selectedObj = null;
+                    }
+                }
+            }
             draw();
             requestAnimationFrame(update);
         }
@@ -137,16 +173,20 @@
             ctx.translate(-cameraX, 0);
 
             // Floor
-            ctx.fillStyle = '#333';
+            ctx.fillStyle = '#222';
             ctx.fillRect(cameraX, 380, cvs.width, 20);
 
-            // Objects
             map.forEach(obj => {
-                if (obj.type === 'platform') ctx.fillStyle = '#4A90E2';
-                else if (obj.type === 'spike') ctx.fillStyle = '#FF4136';
-                else if (obj.type === 'pad') ctx.fillStyle = '#FFDC00';
-                else if (obj.type === 'checkpoint') ctx.fillStyle = '#2ECC40';
+                ctx.fillStyle = obj.type === 'platform' ? '#3498db' : 
+                               obj.type === 'spike' ? '#e74c3c' : 
+                               obj.type === 'pad' ? '#f1c40f' : '#2ecc71';
                 
+                if (obj === selectedObj && isEditor) {
+                    ctx.strokeStyle = "white";
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
+                }
+
                 if (obj.type === 'spike') {
                     ctx.beginPath();
                     ctx.moveTo(obj.x, obj.y + obj.h);
@@ -158,37 +198,57 @@
                 }
             });
 
-            // Player
-            ctx.fillStyle = '#00f2ff';
-            ctx.fillRect(player.x, player.y, player.w, player.h);
+            // Player with "Mediocre" Face
+            ctx.save();
+            ctx.translate(player.x + player.w/2, player.y + player.h/2);
+            ctx.rotate(player.rotation * Math.PI / 180);
+            ctx.fillStyle = '#00ffff';
+            ctx.fillRect(-player.w/2, -player.h/2, player.w, player.h);
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(-player.w/2, -player.h/2, player.w, player.h);
+            // Face
+            ctx.fillStyle = 'black';
+            ctx.fillRect(-8, -10, 4, 4); // Eye L
+            ctx.fillRect(4, -10, 4, 4);  // Eye R
+            ctx.fillRect(-8, 5, 16, 2);  // "Mediocre" straight line mouth
+            ctx.restore();
 
             ctx.restore();
         }
 
-        // Controls
-        window.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && player.onGround && !isEditor) {
-                player.vy = player.jump;
+        window.addEventListener('keydown', e => { 
+            keys[e.code] = true; 
+            if (!isEditor) {
+                if (e.code === 'KeyR') resetPlayer(true);
+                if (e.code === 'KeyB' && player.checkpoints.length > 1) {
+                    player.checkpoints.pop();
+                    resetPlayer(false);
+                }
             }
         });
+        window.addEventListener('keyup', e => keys[e.code] = false);
 
-        // Save/Load
         function exportLevel() {
             const code = btoa(JSON.stringify(map));
             document.getElementById('levelCode').value = code;
             navigator.clipboard.writeText(code);
-            alert("Level code copied to clipboard!");
         }
 
         function importLevel() {
             try {
                 const code = document.getElementById('levelCode').value;
                 map = JSON.parse(atob(code));
-                resetPlayer();
+                resetPlayer(true);
             } catch(e) { alert("Invalid Code"); }
         }
 
-        function resetLevel() { if(confirm("Clear map?")) map = []; }
+        function resetLevel() { if(confirm("Clear everything?")) map = []; }
+
+        // Load Starter Map if present
+        if (STARTER_MAP) {
+            try { map = JSON.parse(atob(STARTER_MAP)); } catch(e) {}
+        }
 
         update();
     </script>
