@@ -113,7 +113,7 @@ function loop() {
         pipes = pipes.filter(p => p.x + p.w + 10 > 0);
         clouds = clouds.filter(cl => cl.x + 50 > 0);
 
-        if (bird.y + bird.r > c.height || bird.y - bird.r < 0) gameOver = true;
+        if (bird.y + bird.r > c.height) gameOver = true;
         pipes.forEach(p => {
             if (bird.x + bird.r > p.x && bird.x - bird.r < p.x + p.w) {
                 if (bird.y - bird.r < p.y || bird.y + bird.r > p.y + p.gap) gameOver = true;
