@@ -1,1 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dash Lite + Editor</title>
+    <style>
+        body { margin: 0; background: #222; color: white; font-family: sans-serif; text-align: center; overflow: hidden; }
+        canvas { display: block; margin: 10px auto; background: #000; border: 2px solid #555; cursor: crosshair; }
+        .menu { margin-top: 10px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        button { padding: 8px 15px; cursor: pointer; background: #444; color: white; border: 1px solid #777; border-radius: 4px; }
+        button.active { background: #4A90E2; border-color: #fff; }
+        .save-area { margin-top: 10px; }
+        input { background: #333; color: white; border: 1px solid #555; padding: 5px; width: 250px; }
+    </style>
+</head>
+<body>
+    <h2 id="mode-text">Mode: Playing</h2>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    
+    <div class="menu">
+        <button onclick="toggleMode()" id="modeBtn">Switch to Editor</button>
+        <button onclick="resetLevel()">Clear Map</button>
+        <a href="index.html" style="color: #aaa; text-decoration: none; line-height: 35px;">Back to Home</a>
+    </div>
 
+    <div id="editor-tools" style="display:none;" class="menu">
+        <button class="tool active" onclick="setTool('platform', this)">Platform</button>
+        <button class="tool" onclick="setTool('spike', this)">Spike</button>
+        <button class="tool" onclick="setTool('pad', this)">Bounce Pad</button>
+        <button class="tool" onclick="setTool('checkpoint', this)">Checkpoint</button>
+        <div class="save-area">
+            <input type="text" id="levelCode" placeholder="Level Code">
+            <button onclick="exportLevel()">Copy Code</button>
+            <button onclick="importLevel()">Load Code</button>
+        </div>
+    </div>
+
+    <script>
+        const cvs = document.getElementById('gameCanvas');
+        const ctx = cvs.getContext('2d');
+
+        // Game State
+        let isEditor = false;
+        let currentTool = 'platform';
+        let map = []; // {x, y, w, h, type}
+        let cameraX = 0;
+
+        // Player
+        let player = { x: 50, y: 300, w: 30, h: 30, vy: 0, gravity: 0.6, jump: -12, onGround: false, dead: false, spawnX: 50, spawnY: 300 };
+
+        function toggleMode() {
+            isEditor = !isEditor;
+            document.getElementById('mode-text').innerText = isEditor ? "Mode: Editor (Click to Place)" : "Mode: Playing (Space to Jump)";
+            document.getElementById('modeBtn').innerText = isEditor ? "Switch to Play" : "Switch to Editor";
+            document.getElementById('editor-tools').style.display = isEditor ? "flex" : "none";
+            if (!isEditor) resetPlayer();
+        }
+
+        function setTool(tool, btn) {
+            currentTool = tool;
+            document.querySelectorAll('.tool').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        // Handle Placement
+        cvs.addEventListener('mousedown', (e) => {
+            if (!isEditor) return;
+            const rect = cvs.getBoundingClientRect();
+            const x = e.clientX - rect.left + cameraX;
+            const y = e.clientY - rect.top;
+
+            if (currentTool === 'platform') map.push({x, y, w: 60, h: 20, type: 'platform'});
+            if (currentTool === 'spike') map.push({x, y: y-20, w: 30, h: 30, type: 'spike'});
+            if (currentTool === 'pad') map.push({x, y, w: 30, h: 10, type: 'pad'});
+            if (currentTool === 'checkpoint') map.push({x, y, w: 20, h: 40, type: 'checkpoint'});
+        });
+
+        function resetPlayer() {
+            player.x = player.spawnX;
+            player.y = player.spawnY;
+            player.vy = 0;
+            player.dead = false;
+            cameraX = 0;
+        }
+
+        function update() {
+            if (!isEditor) {
+                player.vy += player.gravity;
+                player.y += player.vy;
+                player.x += 5; // Constant forward speed
+                cameraX = player.x - 100;
+
+                player.onGround = false;
+
+                // Floor
+                if (player.y + player.h > 380) {
+                    player.y = 380 - player.h;
+                    player.vy = 0;
+                    player.onGround = true;
+                }
+
+                map.forEach(obj => {
+                    // Simple AABB Collision
+                    if (player.x < obj.x + obj.w && player.x + player.w > obj.x &&
+                        player.y < obj.y + obj.h && player.y + player.h > obj.y) {
+                        
+                        if (obj.type === 'platform') {
+                            if (player.vy > 0 && player.y + player.h < obj.y + 20) {
+                                player.y = obj.y - player.h;
+                                player.vy = 0;
+                                player.onGround = true;
+                            } else {
+                                player.dead = true;
+                            }
+                        } else if (obj.type === 'spike') {
+                            player.dead = true;
+                        } else if (obj.type === 'pad') {
+                            player.vy = -18;
+                        } else if (obj.type === 'checkpoint') {
+                            player.spawnX = obj.x;
+                            player.spawnY = obj.y - 10;
+                        }
+                    }
+                });
+
+                if (player.dead) resetPlayer();
+            }
+
+            draw();
+            requestAnimationFrame(update);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, cvs.width, cvs.height);
+            ctx.save();
+            ctx.translate(-cameraX, 0);
+
+            // Floor
+            ctx.fillStyle = '#333';
+            ctx.fillRect(cameraX, 380, cvs.width, 20);
+
+            // Objects
+            map.forEach(obj => {
+                if (obj.type === 'platform') ctx.fillStyle = '#4A90E2';
+                else if (obj.type === 'spike') ctx.fillStyle = '#FF4136';
+                else if (obj.type === 'pad') ctx.fillStyle = '#FFDC00';
+                else if (obj.type === 'checkpoint') ctx.fillStyle = '#2ECC40';
+                
+                if (obj.type === 'spike') {
+                    ctx.beginPath();
+                    ctx.moveTo(obj.x, obj.y + obj.h);
+                    ctx.lineTo(obj.x + obj.w / 2, obj.y);
+                    ctx.lineTo(obj.x + obj.w, obj.y + obj.h);
+                    ctx.fill();
+                } else {
+                    ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+                }
+            });
+
+            // Player
+            ctx.fillStyle = '#00f2ff';
+            ctx.fillRect(player.x, player.y, player.w, player.h);
+
+            ctx.restore();
+        }
+
+        // Controls
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && player.onGround && !isEditor) {
+                player.vy = player.jump;
+            }
+        });
+
+        // Save/Load
+        function exportLevel() {
+            const code = btoa(JSON.stringify(map));
+            document.getElementById('levelCode').value = code;
+            navigator.clipboard.writeText(code);
+            alert("Level code copied to clipboard!");
+        }
+
+        function importLevel() {
+            try {
+                const code = document.getElementById('levelCode').value;
+                map = JSON.parse(atob(code));
+                resetPlayer();
+            } catch(e) { alert("Invalid Code"); }
+        }
+
+        function resetLevel() { if(confirm("Clear map?")) map = []; }
+
+        update();
+    </script>
+</body>
+</html>
