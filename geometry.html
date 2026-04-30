@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dash Pro + Editor</title>
+    <title>Dash Ultra + Editor</title>
     <style>
         body { margin: 0; background: #1a1a1a; color: white; font-family: sans-serif; text-align: center; overflow: hidden; }
         canvas { display: block; margin: 10px auto; background: #000; border: 2px solid #444; }
@@ -32,15 +32,15 @@
         <button class="tool" onclick="setTool('spike', this)">Spike</button>
         <button class="tool" onclick="setTool('pad', this)">Pad</button>
         <button class="tool" onclick="setTool('checkpoint', this)">Checkpt</button>
-        <span style="font-size:12px; color:#888; align-self:center;">WASD: Move Cam | Click: Select | Arrows: Resize | Del: Remove</span>
+        <span style="font-size:11px; color:#888; align-self:center;">Shift+WASD: Move Block | P: Color Block | Arrows: Resize</span>
     </div>
 
     <script>
         const cvs = document.getElementById('gameCanvas');
         const ctx = cvs.getContext('2d');
 
-        // --- STARTER MAP DATA (Paste your code between the quotes) ---
-        const STARTER_MAP = ""; 
+        // STARTER MAP
+        const STARTER_MAP = "W3sieCI6MTQwNCwieSI6MzQyLCJ3IjoxMjQsImgiOjEwLCJ0eXBlIjoicGxhdGZvcm0ifSx7IngiOjE0MTAsInkiOjM2MSwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjE0NTMsInkiOjM2MiwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjE0OTUsInkiOjM1NywidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjEzNzUsInkiOjM2NCwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjE1MzYsInkiOjM0MiwidyI6MzAsImgiOjMyLCJ0eXBlIjoic3Bpa2UifSx7IngiOjE3NDgsInkiOjM2NywidyI6MzAsImgiOjEyLCJ0eXBlIjoicGFkIn0seyJ4IjoxNjM1LCJ5IjoyMTAsInciOjExMiwiaCI6MjAsInR5cGUiOiJwbGF0Zm9ybSJ9LHsieCI6MTgzMywieSI6MzU4LCJ3IjozMCwiaCI6MzAsInR5cGUiOiJzcGlrZSJ9LHsieCI6MTg3OSwieSI6MzY0LCJ3IjozMCwiaCI6MzAsInR5cGUiOiJzcGlrZSJ9LHsieCI6MjAwMywieSI6LTI2LCJ3IjozMzYsImgiOjIxNCwidHlwZSI6InBsYXRmb3JtIn0seyJ4IjoyMTIwLCJ5IjozNjUsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoyMzMzLCJ5IjozNzAsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoyNTg0LCJ5IjozNjUsInciOjMwLCJoIjozMCwidHlwZSI6InBhZCJ9LHsieCI6MjcyOCwieSI6MjcwLCJ3IjozMCwiaCI6MzAsInR5cGUiOiJwYWQifSx7IngiOjI2MzEsInkiOjM2NSwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjI2OTUsInkiOjM2NSwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjI3NTMsInkiOjM2MCwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjI4MTAsInkiOjM2MywidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjI4NTUsInkiOjM2NCwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjMxNjcsInkiOjI4MywidyI6MTk4LCJoIjozMCwidHlwZSI6InBsYXRmb3JtIn0seyJ4IjozMzkzLCJ5IjozNTgsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMzUwLCJ5IjozNTIsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMzIxLCJ5IjozNTUsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMjY4LCJ5IjozNTUsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMjEyLCJ5IjozNTksInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMTYxLCJ5IjozNTksInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMTA3LCJ5IjozNTUsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMDU5LCJ5IjozNTYsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMDA0LCJ5IjozNjAsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoyOTY2LCJ5IjozNjUsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoyOTI5LCJ5IjozNjMsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoyODk2LCJ5IjozNjMsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoxODE1LCJ5IjozNjksInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoxNzk5LCJ5IjozNzYsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoxODU2LCJ5IjozNjQsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoxNjM2LCJ5IjoxODcsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoxNjc2LCJ5IjoxODUsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoxNzE2LCJ5IjoxODksInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoyNDQ0LCJ5IjoyMzksInciOjEwLCJoIjoxNjYsInR5cGUiOiJjaGVja3BvaW50In0seyJ4IjoyOTYwLCJ5IjoyNjksInciOjMwLCJoIjozMCwidHlwZSI6InBhZCJ9XQ==";
 
         let isEditor = false;
         let currentTool = 'platform';
@@ -59,8 +59,8 @@
         function toggleMode() {
             isEditor = !isEditor;
             document.getElementById('hint').innerText = isEditor ? 
-                "WASD: Move Cam | Click: Place/Select | Arrows: Resize | Del: Delete" : 
-                "Space: Jump | R: Reset to Start | B: Back 1 Checkpoint";
+                "WASD: Cam | Shift+WASD: Move Block | P: Color | Arrows: Resize" : 
+                "Space: Jump | R: Reset | B: Back Checkpoint";
             document.getElementById('modeBtn').innerText = isEditor ? "Play Level" : "Edit Level";
             document.getElementById('editor-tools').style.display = isEditor ? "flex" : "none";
             selectedObj = null;
@@ -79,13 +79,12 @@
             const mouseX = e.clientX - rect.left + cameraX;
             const mouseY = e.clientY - rect.top;
 
-            // Try selecting first
             const clicked = map.find(o => mouseX > o.x && mouseX < o.x + o.w && mouseY > o.y && mouseY < o.y + o.h);
             
             if (clicked) {
                 selectedObj = clicked;
             } else {
-                const newObj = { x: mouseX - 15, y: mouseY - 15, w: 30, h: 30, type: currentTool };
+                const newObj = { x: mouseX - 15, y: mouseY - 15, w: 30, h: 30, type: currentTool, color: null };
                 if(currentTool === 'platform') newObj.w = 60;
                 map.push(newObj);
                 selectedObj = newObj;
@@ -93,9 +92,7 @@
         });
 
         function resetPlayer(fullRestart) {
-            if (fullRestart) {
-                player.checkpoints = [{x: 50, y: 300}];
-            }
+            if (fullRestart) player.checkpoints = [{x: 50, y: 300}];
             const cp = player.checkpoints[player.checkpoints.length - 1];
             player.x = cp.x;
             player.y = cp.y;
@@ -115,7 +112,6 @@
                 if (onGround) {
                     player.y = 380 - player.h;
                     player.vy = 0;
-                    // Snap rotation to 90s on ground
                     player.rotation = Math.round(player.rotation / 90) * 90;
                 }
 
@@ -134,24 +130,31 @@
                         } else if (obj.type === 'pad') { player.vy = -16;
                         } else if (obj.type === 'checkpoint') {
                             const last = player.checkpoints[player.checkpoints.length-1];
-                            if (last.x !== obj.x) player.checkpoints.push({x: obj.x, y: obj.y});
+                            if (Math.abs(last.x - obj.x) > 10) player.checkpoints.push({x: obj.x, y: obj.y});
                         }
                     }
                 });
 
-                if (keys['Space'] && onGround) {
-                    player.vy = player.jump;
-                }
-                if (!onGround) player.rotation += 4;
+                if (keys['Space'] && onGround) player.vy = player.jump;
+                if (!onGround) player.rotation += 5;
                 if (player.dead) resetPlayer(false);
 
             } else {
-                // Editor Movement
-                if (keys['KeyA']) cameraX -= 8;
-                if (keys['KeyD']) cameraX += 8;
-                if (keys['KeyW']) console.log("Up"); // Reserved for future verticality
+                const moveAmt = 5;
+                if (keys['ShiftLeft'] || keys['ShiftRight']) {
+                    if (selectedObj) {
+                        if (keys['KeyW']) selectedObj.y -= moveAmt;
+                        if (keys['KeyS']) selectedObj.y += moveAmt;
+                        if (keys['KeyA']) selectedObj.x -= moveAmt;
+                        if (keys['KeyD']) selectedObj.x += moveAmt;
+                    }
+                } else {
+                    if (keys['KeyW']) console.log("Cam Up?");
+                    if (keys['KeyS']) console.log("Cam Down?");
+                    if (keys['KeyA']) cameraX -= 10;
+                    if (keys['KeyD']) cameraX += 10;
+                }
                 
-                // Object manipulation
                 if (selectedObj) {
                     if (keys['ArrowRight']) selectedObj.w += 2;
                     if (keys['ArrowLeft']) selectedObj.w = Math.max(10, selectedObj.w - 2);
@@ -172,14 +175,13 @@
             ctx.save();
             ctx.translate(-cameraX, 0);
 
-            // Floor
             ctx.fillStyle = '#222';
             ctx.fillRect(cameraX, 380, cvs.width, 20);
 
             map.forEach(obj => {
-                ctx.fillStyle = obj.type === 'platform' ? '#3498db' : 
+                ctx.fillStyle = obj.color || (obj.type === 'platform' ? '#3498db' : 
                                obj.type === 'spike' ? '#e74c3c' : 
-                               obj.type === 'pad' ? '#f1c40f' : '#2ecc71';
+                               obj.type === 'pad' ? '#f1c40f' : '#2ecc71');
                 
                 if (obj === selectedObj && isEditor) {
                     ctx.strokeStyle = "white";
@@ -198,7 +200,6 @@
                 }
             });
 
-            // Player with "Mediocre" Face
             ctx.save();
             ctx.translate(player.x + player.w/2, player.y + player.h/2);
             ctx.rotate(player.rotation * Math.PI / 180);
@@ -207,11 +208,9 @@
             ctx.strokeStyle = 'black';
             ctx.lineWidth = 2;
             ctx.strokeRect(-player.w/2, -player.h/2, player.w, player.h);
-            // Face
             ctx.fillStyle = 'black';
-            ctx.fillRect(-8, -10, 4, 4); // Eye L
-            ctx.fillRect(4, -10, 4, 4);  // Eye R
-            ctx.fillRect(-8, 5, 16, 2);  // "Mediocre" straight line mouth
+            ctx.fillRect(-8, -10, 4, 4); ctx.fillRect(4, -10, 4, 4);
+            ctx.fillRect(-8, 5, 16, 2);
             ctx.restore();
 
             ctx.restore();
@@ -219,6 +218,10 @@
 
         window.addEventListener('keydown', e => { 
             keys[e.code] = true; 
+            if (isEditor && e.code === 'KeyP' && selectedObj) {
+                const newCol = prompt("Enter Hex Color (e.g. #ff0000):", selectedObj.color || "");
+                if (newCol) selectedObj.color = newCol;
+            }
             if (!isEditor) {
                 if (e.code === 'KeyR') resetPlayer(true);
                 if (e.code === 'KeyB' && player.checkpoints.length > 1) {
@@ -233,6 +236,7 @@
             const code = btoa(JSON.stringify(map));
             document.getElementById('levelCode').value = code;
             navigator.clipboard.writeText(code);
+            alert("Code copied!");
         }
 
         function importLevel() {
@@ -245,7 +249,6 @@
 
         function resetLevel() { if(confirm("Clear everything?")) map = []; }
 
-        // Load Starter Map if present
         if (STARTER_MAP) {
             try { map = JSON.parse(atob(STARTER_MAP)); } catch(e) {}
         }
