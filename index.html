@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Private Hub</title>
+    <title>Private Menu</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -111,7 +111,7 @@
         const isIPad = /iPad|Macintosh/.test(ua) && 'ontouchend' in document;
 
         // Bypassed for testing on normal computers: Change this to `true` when you push to GitHub
-        const enforceDeviceCheck = false; 
+        const enforceDeviceCheck =true; 
 
         if (enforceDeviceCheck && !isIPad) {
             // Replaces page with fake 404
