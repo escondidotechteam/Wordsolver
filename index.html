@@ -124,19 +124,20 @@
             window.stop(); 
         }
 
-        // --- 2. BASE64 PASSCODE GATE ---
-        // This is the string "1234" in Base64 encoding. 
-        // Even if they look at the code, they'll just see 'MTIzNA==' instead of your passcode.
-        const ENCODED_HASH = "MTIzNA=="; 
+       
+        
+const ALLOWED_HASHES = ["QURtaW4xOTc=", "YWhjZDEwNg==", "UEBzc3cwcmQ0MzIx"]; 
 
-        function checkAccess() {
-            const pin = document.getElementById('passcode').value;
-            // Converts the typed pin to Base64 to compare it
-            if (btoa(pin) === ENCODED_HASH) {
-                document.getElementById('gate-area').classList.add('hidden');
-                document.getElementById('menu-area').classList.remove('hidden');
-            } else {
-                document.getElementById('err').innerText = "Access Denied: Invalid Authorization.";
+function checkAccess() {
+    const pin = document.getElementById('passcode').value;
+    
+    if (ALLOWED_HASHES.includes(btoa(pin))) {
+        document.getElementById('gate-area').classList.add('hidden');
+        document.getElementById('menu-area').classList.remove('hidden');
+    } else {
+        document.getElementById('err').innerText = "Access Denied: Invalid Authorization.";
+    }
+}
             }
         }
     </script>
