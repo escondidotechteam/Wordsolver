@@ -15,7 +15,7 @@
     </style>
 </head>
 <body>
-    <div class="controls-hint" id="hint">Mode: Playing | Space: Jump | R: Restart | B: Back Checkpoint</div>
+    <div class="controls-hint" id="hint">Mode: Playing | Space: Jump | R: Restart | B: Back Checkpoint | T: Pause</div>
     <canvas id="gameCanvas" width="800" height="400"></canvas>
     
     <div class="menu">
@@ -30,30 +30,13 @@
     <div id="editor-tools" style="display:none;" class="menu">
         <button class="tool active" onclick="setTool('platform', this)">Block</button>
         <button class="tool" onclick="setTool('spike', this)">Spike</button>
+        <button class="tool" onclick="setTool('spikepit', this)">Spikepit</button>
         <button class="tool" onclick="setTool('pad', this)">Pad</button>
         <button class="tool" onclick="setTool('checkpoint', this)">Checkpt</button>
-        <span style="font-size:11px; color:#888; align-self:center;">Shift+WASD: Move Block | P: Color Block | Arrows: Resize</span>
+        <span style="font-size:11px; color:#888; align-self:center;">Shift+WASD: Move Block | P: Color Block | Arrows: Expand | Ctrl+Arrows: Shrink</span>
     </div>
 
     <script>
-        // --- LOAD CUSTOM LEVEL FROM MENU ---
-    const urlParams = new URLSearchParams(window.location.search);
-    const sharedLevelData = urlParams.get('level');
-
-    if (sharedLevelData) {
-    try {
-        // Decode the level data from the URL
-        const decodedLevel = JSON.parse(atob(decodeURIComponent(sharedLevelData)));
-        
-        // Overwrite your default game obstacles with the custom ones
-        // Note: Change 'obstacles' to match the name of the map/obstacle variable in your game
-        obstacles = decodedLevel; 
-        
-        console.log("Custom level loaded successfully!");
-        } catch (e) {
-        console.error("Error loading shared level data:", e);
-        }
-    }
         const cvs = document.getElementById('gameCanvas');
         const ctx = cvs.getContext('2d');
 
@@ -61,6 +44,7 @@
         const STARTER_MAP = "W3sieCI6MTQwNCwieSI6MzQyLCJ3IjoxMjQsImgiOjEwLCJ0eXBlIjoicGxhdGZvcm0ifSx7IngiOjE0MTAsInkiOjM2MSwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjE0NTMsInkiOjM2MiwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjE0OTUsInkiOjM1NywidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjEzNzUsInkiOjM2NCwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjE1MzYsInkiOjM0MiwidyI6MzAsImgiOjMyLCJ0eXBlIjoic3Bpa2UifSx7IngiOjE3NDgsInkiOjM2NywidyI6MzAsImgiOjEyLCJ0eXBlIjoicGFkIn0seyJ4IjoxNjM1LCJ5IjoyMTAsInciOjExMiwiaCI6MjAsInR5cGUiOiJwbGF0Zm9ybSJ9LHsieCI6MTgzMywieSI6MzU4LCJ3IjozMCwiaCI6MzAsInR5cGUiOiJzcGlrZSJ9LHsieCI6MTg3OSwieSI6MzY0LCJ3IjozMCwiaCI6MzAsInR5cGUiOiJzcGlrZSJ9LHsieCI6MjAwMywieSI6LTI2LCJ3IjozMzYsImgiOjIxNCwidHlwZSI6InBsYXRmb3JtIn0seyJ4IjoyMTIwLCJ5IjozNjUsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoyMzMzLCJ5IjozNzAsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoyNTg0LCJ5IjozNjUsInciOjMwLCJoIjozMCwidHlwZSI6InBhZCJ9LHsieCI6MjcyOCwieSI6MjcwLCJ3IjozMCwiaCI6MzAsInR5cGUiOiJwYWQifSx7IngiOjI2MzEsInkiOjM2NSwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjI2OTUsInkiOjM2NSwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjI3NTMsInkiOjM2MCwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjI4MTAsInkiOjM2MywidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjI4NTUsInkiOjM2NCwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjMxNjcsInkiOjI4MywidyI6MTk4LCJoIjozMCwidHlwZSI6InBsYXRmb3JtIn0seyJ4IjozMzkzLCJ5IjozNTgsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMzUwLCJ5IjozNTIsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMzIxLCJ5IjozNTUsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMjY4LCJ5IjozNTUsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMjEyLCJ5IjozNTksInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMTYxLCJ5IjozNTksInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMTA3LCJ5IjozNTUsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMDU5LCJ5IjozNTYsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMDA0LCJ5IjozNjAsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoyOTY2LCJ5IjozNjUsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoyOTI5LCJ5IjozNjMsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoyODk2LCJ5IjozNjMsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoxODE1LCJ5IjozNjksInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoxNzk5LCJ5IjozNzYsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoxODU2LCJ5IjozNjQsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoxNjM2LCJ5IjoxODcsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoxNjc2LCJ5IjoxODUsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoxNzE2LCJ5IjoxODksInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoyNDQ0LCJ5IjoyMzksInciOjEwLCJoIjoxNjYsInR5cGUiOiJjaGVja3BvaW50In0seyJ4IjoyOTYwLCJ5IjoyNjksInciOjMwLCJoIjozMCwidHlwZSI6InBhZCJ9XQ==";
 
         let isEditor = false;
+        let isPaused = false;
         let currentTool = 'platform';
         let map = [];
         let selectedObj = null;
@@ -74,11 +58,33 @@
             checkpoints: [{x: 50, y: 300}] 
         };
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const sharedLevelData = urlParams.get('level');
+
+        if (sharedLevelData) {
+            try {
+                map = JSON.parse(atob(decodeURIComponent(sharedLevelData)));
+                console.log("Custom level loaded successfully!");
+            } catch (e) {
+                console.error("Error loading shared level data:", e);
+                loadStarterMap();
+            }
+        } else {
+            loadStarterMap();
+        }
+
+        function loadStarterMap() {
+            if (STARTER_MAP) {
+                try { map = JSON.parse(atob(STARTER_MAP)); } catch(e) {}
+            }
+        }
+
         function toggleMode() {
             isEditor = !isEditor;
+            isPaused = false;
             document.getElementById('hint').innerText = isEditor ? 
-                "WASD: Cam | Shift+WASD: Move Block | P: Color | Arrows: Resize" : 
-                "Space: Jump | R: Reset | B: Back Checkpoint";
+                "WASD: Cam | Shift+WASD: Move Block | P: Color | Arrows: Expand | Ctrl+Arrows: Shrink" : 
+                "Space: Jump | R: Reset | B: Back Checkpoint | T: Pause";
             document.getElementById('modeBtn').innerText = isEditor ? "Play Level" : "Edit Level";
             document.getElementById('editor-tools').style.display = isEditor ? "flex" : "none";
             selectedObj = null;
@@ -103,7 +109,8 @@
                 selectedObj = clicked;
             } else {
                 const newObj = { x: mouseX - 15, y: mouseY - 15, w: 30, h: 30, type: currentTool, color: null };
-                if(currentTool === 'platform') newObj.w = 60;
+                if (currentTool === 'platform') newObj.w = 60;
+                if (currentTool === 'spikepit') { newObj.w = 30; newObj.h = 15; newObj.y = mouseY; }
                 map.push(newObj);
                 selectedObj = newObj;
             }
@@ -120,7 +127,7 @@
         }
 
         function update() {
-            if (!isEditor) {
+            if (!isEditor && !isPaused) {
                 player.vy += player.gravity;
                 player.y += player.vy;
                 player.x += 5;
@@ -144,7 +151,8 @@
                                 onGround = true;
                                 player.rotation = Math.round(player.rotation / 90) * 90;
                             } else { player.dead = true; }
-                        } else if (obj.type === 'spike') { player.dead = true;
+                        } else if (obj.type === 'spike' || obj.type === 'spikepit') { 
+                            player.dead = true;
                         } else if (obj.type === 'pad') { player.vy = -16;
                         } else if (obj.type === 'checkpoint') {
                             const last = player.checkpoints[player.checkpoints.length-1];
@@ -157,8 +165,9 @@
                 if (!onGround) player.rotation += 5;
                 if (player.dead) resetPlayer(false);
 
-            } else {
-                const moveAmt = 5;
+            } else if (isEditor) {
+                // Lowered shift+WASD movement speed to 2px for better precision
+                const moveAmt = 2; 
                 if (keys['ShiftLeft'] || keys['ShiftRight']) {
                     if (selectedObj) {
                         if (keys['KeyW']) selectedObj.y -= moveAmt;
@@ -167,17 +176,29 @@
                         if (keys['KeyD']) selectedObj.x += moveAmt;
                     }
                 } else {
-                    if (keys['KeyW']) console.log("Cam Up?");
-                    if (keys['KeyS']) console.log("Cam Down?");
                     if (keys['KeyA']) cameraX -= 10;
                     if (keys['KeyD']) cameraX += 10;
                 }
                 
                 if (selectedObj) {
-                    if (keys['ArrowRight']) selectedObj.w += 2;
-                    if (keys['ArrowLeft']) selectedObj.w = Math.max(10, selectedObj.w - 2);
-                    if (keys['ArrowUp']) { selectedObj.y -= 2; selectedObj.h += 2; }
-                    if (keys['ArrowDown']) selectedObj.h = Math.max(10, selectedObj.h - 2);
+                    const isCtrl = keys['ControlLeft'] || keys['ControlRight'];
+                    
+                    if (keys['ArrowRight']) {
+                        if (isCtrl) selectedObj.w = Math.max(10, selectedObj.w - 2);
+                        else selectedObj.w += 2;
+                    }
+                    if (keys['ArrowLeft']) {
+                        if (isCtrl) selectedObj.w = Math.max(10, selectedObj.w - 2);
+                        else selectedObj.w += 2;
+                    }
+                    if (keys['ArrowUp']) {
+                        if (isCtrl) { selectedObj.y += 2; selectedObj.h = Math.max(10, selectedObj.h - 2); }
+                        else { selectedObj.y -= 2; selectedObj.h += 2; }
+                    }
+                    if (keys['ArrowDown']) {
+                        if (isCtrl) selectedObj.h = Math.max(10, selectedObj.h - 2);
+                        else { selectedObj.y -= 2; selectedObj.h += 2; }
+                    }
                     if (keys['Delete'] || keys['Backspace']) {
                         map = map.filter(o => o !== selectedObj);
                         selectedObj = null;
@@ -197,9 +218,12 @@
             ctx.fillRect(cameraX, 380, cvs.width, 20);
 
             map.forEach(obj => {
-                ctx.fillStyle = obj.color || (obj.type === 'platform' ? '#3498db' : 
-                               obj.type === 'spike' ? '#e74c3c' : 
-                               obj.type === 'pad' ? '#f1c40f' : '#2ecc71');
+                ctx.fillStyle = obj.color || (
+                    obj.type === 'platform' ? '#3498db' : 
+                    obj.type === 'spike' ? '#e74c3c' : 
+                    obj.type === 'spikepit' ? '#8e44ad' :
+                    obj.type === 'pad' ? '#f1c40f' : '#2ecc71'
+                );
                 
                 if (obj === selectedObj && isEditor) {
                     ctx.strokeStyle = "white";
@@ -212,6 +236,18 @@
                     ctx.moveTo(obj.x, obj.y + obj.h);
                     ctx.lineTo(obj.x + obj.w / 2, obj.y);
                     ctx.lineTo(obj.x + obj.w, obj.y + obj.h);
+                    ctx.fill();
+                } else if (obj.type === 'spikepit') {
+                    // Render 3 miniature spikes
+                    ctx.beginPath();
+                    ctx.moveTo(obj.x, obj.y + obj.h);
+                    ctx.lineTo(obj.x + obj.w * 0.16, obj.y);
+                    ctx.lineTo(obj.x + obj.w * 0.33, obj.y + obj.h);
+                    ctx.lineTo(obj.x + obj.w * 0.5, obj.y);
+                    ctx.lineTo(obj.x + obj.w * 0.66, obj.y + obj.h);
+                    ctx.lineTo(obj.x + obj.w * 0.83, obj.y);
+                    ctx.lineTo(obj.x + obj.w, obj.y + obj.h);
+                    ctx.closePath();
                     ctx.fill();
                 } else {
                     ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
@@ -231,11 +267,25 @@
             ctx.fillRect(-8, 5, 16, 2);
             ctx.restore();
 
+            if (isPaused && !isEditor) {
+                ctx.fillStyle = "rgba(0,0,0,0.4)";
+                ctx.fillRect(cameraX, 0, cvs.width, cvs.height);
+                ctx.fillStyle = "white";
+                ctx.font = "bold 30px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText("PAUSED", cameraX + cvs.width/2, cvs.height/2);
+                ctx.textAlign = "start";
+            }
+
             ctx.restore();
         }
 
         window.addEventListener('keydown', e => { 
             keys[e.code] = true; 
+            
+            if (e.code === 'KeyT') {
+                isPaused = !isPaused;
+            }
             if (isEditor && e.code === 'KeyP' && selectedObj) {
                 const newCol = prompt("Enter Hex Color (e.g. #ff0000):", selectedObj.color || "");
                 if (newCol) selectedObj.color = newCol;
@@ -266,10 +316,6 @@
         }
 
         function resetLevel() { if(confirm("Clear everything?")) map = []; }
-
-        if (STARTER_MAP) {
-            try { map = JSON.parse(atob(STARTER_MAP)); } catch(e) {}
-        }
 
         update();
     </script>
