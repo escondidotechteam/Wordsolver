@@ -36,6 +36,24 @@
     </div>
 
     <script>
+        // --- LOAD CUSTOM LEVEL FROM MENU ---
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharedLevelData = urlParams.get('level');
+
+    if (sharedLevelData) {
+    try {
+        // Decode the level data from the URL
+        const decodedLevel = JSON.parse(atob(decodeURIComponent(sharedLevelData)));
+        
+        // Overwrite your default game obstacles with the custom ones
+        // Note: Change 'obstacles' to match the name of the map/obstacle variable in your game
+        obstacles = decodedLevel; 
+        
+        console.log("Custom level loaded successfully!");
+        } catch (e) {
+        console.error("Error loading shared level data:", e);
+        }
+    }
         const cvs = document.getElementById('gameCanvas');
         const ctx = cvs.getContext('2d');
 
