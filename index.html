@@ -3,155 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word Search Solver</title>
+    <title>Private Hub</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            text-align: center;
-            background-color: #f4f4f9;
+            background-color: #121212;
+            color: #ffffff;
             margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        h3 { color: #333; margin-top: 0; }
-        textarea {
-            width: 100%;
-            height: 100px;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 16px;
-            box-sizing: border-box;
-            margin-bottom: 15px;
-        }
-        #s {
-            padding: 12px;
-            width: 100%;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 16px;
-            box-sizing: border-box;
-            margin-bottom: 20px;
-        }
-        #g {
-            display: grid;
-            gap: 4px;
+            padding: 0;
+            display: flex;
             justify-content: center;
-            margin-top: 20px;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
         }
-        .cell {
-            width: 35px;
-            height: 35px;
-            border: 1px solid #ddd;
-            line-height: 35px;
-            background: #fff;
+        .box {
+            background: #1e1e1e;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            max-width: 450px;
+            width: 90%;
+            border: 1px solid #333;
+        }
+        h2 { margin-top: 0; color: #fff; }
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border: 1px solid #444;
+            border-radius: 6px;
+            background: #2b2b2b;
+            color: #fff;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
             font-weight: bold;
-            text-transform: uppercase;
-            border-radius: 4px;
             transition: background 0.2s;
         }
+        button:hover { background: #27ae60; }
+        .hidden { display: none; }
+        
+        /* Menu Styles */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
         .nav-btn {
-            display: inline-block;
-            margin-top: 30px;
-            padding: 10px 20px;
-            background-color: #4A90E2;
+            display: block;
+            padding: 14px;
             color: white;
             text-decoration: none;
             border-radius: 6px;
-            font-weight: 500;
-            transition: background 0.3s;
+            font-weight: bold;
+            font-size: 16px;
+            transition: transform 0.2s, filter 0.2s;
         }
-        .nav-btn:hover {
-            background-color: #357ABD;
-        }
+        .nav-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        .btn-word { background: #3498db; }
+        .btn-flappy { background: #f1c40f; color: #000; }
+        .btn-geometry { background: #2ecc71; }
+        .btn-poly { background: #e67e22; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h3>Word Search Solver</h3>
-        
-        <textarea id="t" placeholder="Paste Grid (one row per line)" oninput="u()"></textarea>
-        <br>
-        <input id="s" placeholder="Type word to find..." oninput="f()">
+    <div id="device-error" class="hidden">
+        <h1>404 Not Found</h1>
+        <p>The requested URL was not found on this server.</p>
+    </div>
 
-        <div id="g"></div>
+    <div id="gate-area" class="box">
+        <h2>System Verification</h2>
+        <p style="color: #888; font-size: 14px;">Enter authorization passcode to proceed.</p>
+        <input type="password" id="passcode" placeholder="Passcode">
+        <button onclick="checkAccess()">Unlock Menu</button>
+        <p id="err" style="color: #e74c3c; font-size: 14px; margin-top: 10px;"></p>
+    </div>
 
-<div style="display: flex; gap: 10px; justify-content: center; margin-top: 30px;">
-    <a href="flappy.html" class="nav-btn">Play Flappy Bird</a>
-    <a href="geometry.html" class="nav-btn" style="background-color: #2ECC40;">Geometry Dash</a>
-</div>
+    <div id="menu-area" class="box hidden">
+        <h2>Main Menu Hub</h2>
+        <p style="color: #888; font-size: 14px; margin-bottom: 20px;">Welcome back. Select an application:</p>
         
+        <div class="menu-grid">
+            <a href="solver.html" class="nav-btn btn-word">Word Search Solver</a>
+            <a href="flappy.html" class="nav-btn btn-flappy">Flappy Bird Pro</a>
+            <a href="geometry.html" class="nav-btn btn-geometry">Geometry Dash Ultra</a>
+            <a href="polytrack/index.html" class="nav-btn btn-poly">Polytrack (Local)</a>
+        </div>
+    </div>
 
     <script>
-        let gd = [];
+        // --- 1. IPAD ONLY HARDWARE FILTER ---
+        // Checks if the user's browser agent mentions iPad or Macintosh (since newer iPads spoof as Mac)
+        const ua = navigator.userAgent;
+        const isIPad = /iPad|Macintosh/.test(ua) && 'ontouchend' in document;
 
-        function u() {
-            const val = document.getElementById('t').value.toUpperCase().trim();
-            if (!val) {
-                document.getElementById('g').innerHTML = '';
-                return;
-            }
-            const rows = val.split('\n');
-            gd = rows.map(r => r.replace(/[^A-Z]/g, '').split(''));
-            
-            const g = document.getElementById('g');
-            g.innerHTML = '';
-            
-            if (gd.length === 0 || gd[0].length === 0) return;
+        // Bypassed for testing on normal computers: Change this to `true` when you push to GitHub
+        const enforceDeviceCheck = false; 
 
-            g.style.gridTemplateColumns = `repeat(${gd[0].length}, 35px)`;
-
-            gd.forEach((r, i) => r.forEach((c, j) => {
-                const e = document.createElement('div');
-                e.id = 'r' + i + 'c' + j;
-                e.className = 'cell';
-                e.textContent = c;
-                g.appendChild(e);
-            }));
-            f();
+        if (enforceDeviceCheck && !isIPad) {
+            // Replaces page with fake 404
+            document.body.innerHTML = document.getElementById('device-error').innerHTML;
+            document.body.style.backgroundColor = "#fff";
+            document.body.style.color = "#000";
+            document.body.style.fontFamily = "sans-serif";
+            document.body.style.textAlign = "left";
+            document.body.style.padding = "20px";
+            window.stop(); 
         }
 
-        function f() {
-            const w = document.getElementById('s').value.toUpperCase().trim();
-            document.querySelectorAll('.cell').forEach(e => e.style.background = '#fff');
-            
-            if (w.length < 2) return;
+        // --- 2. BASE64 PASSCODE GATE ---
+        // This is the string "1234" in Base64 encoding. 
+        // Even if they look at the code, they'll just see 'MTIzNA==' instead of your passcode.
+        const ENCODED_HASH = "MTIzNA=="; 
 
-            const dr = [
-                [0, 1], [0, -1], [1, 0], [-1, 0], 
-                [1, 1], [-1, -1], [1, -1], [-1, 1]
-            ];
-
-            for (let r = 0; r < gd.length; r++) {
-                for (let c = 0; c < gd[r].length; c++) {
-                    if (gd[r][c] === w[0]) {
-                        dr.forEach(([y, x]) => {
-                            let match = true;
-                            for (let k = 0; k < w.length; k++) {
-                                let nr = r + k * y;
-                                let nc = c + k * x;
-                                if (nr < 0 || nr >= gd.length || nc < 0 || nc >= gd[r].length || gd[nr][nc] !== w[k]) {
-                                    match = false;
-                                    break;
-                                }
-                            }
-                            if (match) {
-                                for (let k = 0; k < w.length; k++) {
-                                    document.getElementById('r' + (r + k * y) + 'c' + (c + k * x)).style.background = '#ffeb3b';
-                                }
-                            }
-                        });
-                    }
-                }
+        function checkAccess() {
+            const pin = document.getElementById('passcode').value;
+            // Converts the typed pin to Base64 to compare it
+            if (btoa(pin) === ENCODED_HASH) {
+                document.getElementById('gate-area').classList.add('hidden');
+                document.getElementById('menu-area').classList.remove('hidden');
+            } else {
+                document.getElementById('err').innerText = "Access Denied: Invalid Authorization.";
             }
         }
     </script>
