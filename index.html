@@ -132,9 +132,9 @@
         
         <div class="menu-grid">
             <a href="solver.html" class="nav-btn btn-word">Word Search Solver</a>
-            <a href="flappy.html" class="nav-btn btn-flappy">Jumpy Parrot</a>
-            <a href="geometry.html" class="nav-btn btn-geometry">Geometry Sprint</a>
-            <a href="polytrack/index.html" class="nav-btn btn-poly">Polytrack (404)</a>
+            <a href="flappy.html" class="nav-btn btn-flappy">Flappy Bird Pro</a>
+            <a href="geometry.html" class="nav-btn btn-geometry">Geometry Dash Ultra</a>
+            <a href="polytrack/index.html" class="nav-btn btn-poly">Polytrack (Local)</a>
         </div>
 
         <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
@@ -173,11 +173,9 @@
         // --- 2. MULTI-PASSCODE GATE ---
         const ALLOWED_HASHES = ["QURtaW4xOTc=", "YWhjZDEwNg==", "UEBzc3cwcmQ0MzIx"]; 
 
-        // Runs automatically as soon as the page loads
         window.onload = function() {
             const savedSession = localStorage.getItem('isAuthorized');
             if (savedSession === 'true') {
-                // If they previously signed in, instantly bypass the login box
                 document.getElementById('gate-area').classList.add('hidden');
                 document.getElementById('menu-area').classList.remove('hidden');
                 loadLevels();
@@ -188,9 +186,7 @@
             const pin = document.getElementById('passcode').value;
             
             if (ALLOWED_HASHES.includes(btoa(pin))) {
-                // Save the session so they stay logged in
                 localStorage.setItem('isAuthorized', 'true');
-                
                 document.getElementById('gate-area').classList.add('hidden');
                 document.getElementById('menu-area').classList.remove('hidden');
                 loadLevels();
@@ -204,26 +200,38 @@
             location.reload();
         }
 
-        // --- 3. LEVEL SHARING LOGIC ---
-        let localLevels = [
-            { title: "Stereo Madness Classic", data: "BASE64_LEVEL_DATA_HERE" },
-            { title: "The Flying Vault", data: "BASE64_LEVEL_DATA_HERE" }
-        ];
+        // --- 3. CLOUD LEVEL SHARING SYSTEM (Using Google Script) ---
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzm-4ut1y2hqjtLMMkrgBstK-fE6aB8m4fvhyEY74U-qg4lHuccOeSDY_2fUILGXiXcUg/exec"; 
 
         function loadLevels() {
             const container = document.getElementById('levels-container');
-            container.innerHTML = "";
-            localLevels.forEach(lvl => {
-                const div = document.createElement('div');
-                div.className = "level-item";
-                div.innerHTML = `
-                    <div>
-                        <strong style="font-size:14px;">${lvl.title}</strong>
-                    </div>
-                    <a href="geometry.html?level=${encodeURIComponent(lvl.data)}" class="play-lvl-btn">Play</a>
-                `;
-                container.appendChild(div);
-            });
+            container.innerHTML = '<p style="color:#666; font-size: 13px; text-align: center;">Fetching cloud levels...</p>';
+
+            fetch(GOOGLE_SCRIPT_URL)
+                .then(response => response.json())
+                .then(levels => {
+                    container.innerHTML = "";
+                    if (levels.length === 0) {
+                        container.innerHTML = '<p style="color:#666; font-size: 13px; text-align: center;">No custom levels shared yet.</p>';
+                        return;
+                    }
+
+                    levels.forEach(lvl => {
+                        const div = document.createElement('div');
+                        div.className = "level-item";
+                        div.innerHTML = `
+                            <div>
+                                <strong style="font-size:14px;">${lvl.title}</strong>
+                            </div>
+                            <a href="geometry.html?level=${encodeURIComponent(lvl.data)}" class="play-lvl-btn">Play</a>
+                        `;
+                        container.appendChild(div);
+                    });
+                })
+                .catch(err => {
+                    container.innerHTML = '<p style="color:#e74c3c; font-size: 13px; text-align: center;">Error loading cloud levels.</p>';
+                    console.error(err);
+                });
         }
 
         function postLevel() {
@@ -237,14 +245,33 @@
                 return;
             }
 
-            localLevels.push({ title: title, data: data });
-            loadLevels();
+            status.innerText = "Uploading level...";
+            status.style.color = "#f1c40f";
 
-            status.innerText = "Level posted successfully to the list!";
-            status.style.color = "#2ecc71";
+            const newLevel = { title: title, data: data };
 
-            document.getElementById('lvl-title').value = "";
-            document.getElementById('lvl-data').value = "";
+            fetch(GOOGLE_SCRIPT_URL, {
+                redirect: "follow",
+                method: "POST",
+                body: JSON.stringify(newLevel),
+                headers: {
+                    "Content-Type": "text/plain;charset=utf-8"
+                }
+            })
+            .then(res => res.json())
+            .then(response => {
+                status.innerText = "Level successfully saved to the cloud!";
+                status.style.color = "#2ecc71";
+                
+                document.getElementById('lvl-title').value = "";
+                document.getElementById('lvl-data').value = "";
+                loadLevels();
+            })
+            .catch(err => {
+                status.innerText = "Error uploading to cloud.";
+                status.style.color = "#e74c3c";
+                console.error(err);
+            });
         }
     </script>
 </body>
