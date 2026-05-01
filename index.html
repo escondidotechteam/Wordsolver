@@ -106,15 +106,12 @@
 
     <script>
         // --- 1. IPAD ONLY HARDWARE FILTER ---
-        // Checks if the user's browser agent mentions iPad or Macintosh (since newer iPads spoof as Mac)
         const ua = navigator.userAgent;
         const isIPad = /iPad|Macintosh/.test(ua) && 'ontouchend' in document;
 
-        // Bypassed for testing on normal computers: Change this to `true` when you push to GitHub
-        const enforceDeviceCheck =true; 
+        const enforceDeviceCheck = true; 
 
         if (enforceDeviceCheck && !isIPad) {
-            // Replaces page with fake 404
             document.body.innerHTML = document.getElementById('device-error').innerHTML;
             document.body.style.backgroundColor = "#fff";
             document.body.style.color = "#000";
@@ -124,20 +121,17 @@
             window.stop(); 
         }
 
-       
-        
-const ALLOWED_HASHES = ["QURtaW4xOTc=", "YWhjZDEwNg==", "UEBzc3cwcmQ0MzIx"]; 
+        // --- 2. MULTI-PASSCODE GATE ---
+        const ALLOWED_HASHES = ["QURtaW4xOTc=", "YWhjZDEwNg==", "UEBzc3cwcmQ0MzIx"]; 
 
-function checkAccess() {
-    const pin = document.getElementById('passcode').value;
-    
-    if (ALLOWED_HASHES.includes(btoa(pin))) {
-        document.getElementById('gate-area').classList.add('hidden');
-        document.getElementById('menu-area').classList.remove('hidden');
-    } else {
-        document.getElementById('err').innerText = "Access Denied: Invalid Authorization.";
-    }
-}
+        function checkAccess() {
+            const pin = document.getElementById('passcode').value;
+            
+            if (ALLOWED_HASHES.includes(btoa(pin))) {
+                document.getElementById('gate-area').classList.add('hidden');
+                document.getElementById('menu-area').classList.remove('hidden');
+            } else {
+                document.getElementById('err').innerText = "Access Denied: Invalid Authorization.";
             }
         }
     </script>
