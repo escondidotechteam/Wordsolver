@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geometry Sprint + Editor</title>
+    <title>Dash Ultra + Editor</title>
     <style>
         body { margin: 0; background: #1a1a1a; color: white; font-family: sans-serif; text-align: center; overflow: hidden; }
         canvas { display: block; margin: 10px auto; background: #000; border: 2px solid #444; }
@@ -40,8 +40,8 @@
         const cvs = document.getElementById('gameCanvas');
         const ctx = cvs.getContext('2d');
 
-        // STARTER MAP
-        const STARTER_MAP = "W3sieCI6MTQwNCwieSI6MzQyLCJ3IjoxMjQsImgiOjEwLCJ0eXBlIjoicGxhdGZvcm0iLCJjb2xvciI6IiM2QzNCQUEifSx7IngiOjE0MTAsInkiOjM2MSwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjE0NTMsInkiOjM2MiwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjE0OTUsInkiOjM1NywidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjEzNzUsInkiOjM2NCwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjE1MzYsInkiOjM0MiwidyI6MzAsImgiOjMyLCJ0eXBlIjoic3Bpa2UifSx7IngiOjE3NDgsInkiOjM2NywidyI6MzAsImgiOjEyLCJ0eXBlIjoicGFkIn0seyJ4IjoxNjM1LCJ5IjoyMTAsInciOjExMiwiaCI6MjAsInR5cGUiOiJwbGF0Zm9ybSIsImNvbG9yIjoiIzZDM0JBQSJ9LHsieCI6MTgzMywieSI6MzU4LCJ3IjozMCwiaCI6MzAsInR5cGUiOiJzcGlrZSJ9LHsieCI6MTg3OSwieSI6MzY0LCJ3IjozMCwiaCI6MzAsInR5cGUiOiJzcGlrZSJ9LHsieCI6MjAwMywieSI6LTI2LCJ3IjozMzYsImgiOjIxNCwidHlwZSI6InBsYXRmb3JtIiwiY29sb3IiOiIjNkMzQkFBIn0seyJ4IjoyMTIwLCJ5IjozNjUsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoyMzMzLCJ5IjozNzAsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoyNTg0LCJ5IjozNjUsInciOjMwLCJoIjozMCwidHlwZSI6InBhZCJ9LHsieCI6MjcyOCwieSI6MjcwLCJ3IjozMCwiaCI6MzAsInR5cGUiOiJwYWQifSx7IngiOjI2MzEsInkiOjM2NSwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjI2OTUsInkiOjM2NSwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjI3NTMsInkiOjM2MCwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjI4MTAsInkiOjM2MywidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjI4NTUsInkiOjM2NCwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjMxNjcsInkiOjI4MywidyI6MTk4LCJoIjozMCwidHlwZSI6InBsYXRmb3JtIiwiY29sb3IiOiIjNkMzQkFBIn0seyJ4IjozMzkzLCJ5IjozNTgsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMzUwLCJ5IjozNTIsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMzIxLCJ5IjozNTUsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMjY4LCJ5IjozNTUsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMjEyLCJ5IjozNTksInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMTYxLCJ5IjozNTksInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMTA3LCJ5IjozNTUsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMDU5LCJ5IjozNTYsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMDA0LCJ5IjozNjAsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoyOTY2LCJ5IjozNjUsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoyOTI5LCJ5IjozNjMsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoyODk2LCJ5IjozNjMsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoxODE1LCJ5IjozNjksInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoxNzk5LCJ5IjozNzYsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoxODU2LCJ5IjozNjQsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoxNjM2LCJ5IjoxODcsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoxNjc2LCJ5IjoxODUsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoxNzE2LCJ5IjoxODksInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoyNDQ0LCJ5IjoyMzksInciOjEwLCJoIjoxNjYsInR5cGUiOiJjaGVja3BvaW50In0seyJ4IjoyOTYwLCJ5IjoyNjksInciOjMwLCJoIjozMCwidHlwZSI6InBhZCJ9LHsieCI6MzkxNCwieSI6MzU2LCJ3IjozMCwiaCI6MzAsInR5cGUiOiJzcGlrZSIsImNvbG9yIjpudWxsfSx7IngiOjM5MDcsInkiOjE4MSwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UiLCJjb2xvciI6bnVsbH0seyJ4IjozOTQ4LCJ5IjoxOTMsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIiwiY29sb3IiOm51bGx9LHsieCI6Mzk1MiwieSI6MzYwLCJ3IjozMCwiaCI6MzAsInR5cGUiOiJzcGlrZSIsImNvbG9yIjpudWxsfSx7IngiOjM5MjksInkiOjE5NSwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UiLCJjb2xvciI6bnVsbH0seyJ4Ijo0Mjc3LCJ5IjozMTAsInciOjQzOCwiaCI6NjgsInR5cGUiOiJwbGF0Zm9ybSIsImNvbG9yIjoiIzZDM0JBQSJ9LHsieCI6NDI0MiwieSI6MzU5LCJ3IjozMCwiaCI6MzAsInR5cGUiOiJzcGlrZSIsImNvbG9yIjpudWxsfSx7IngiOjQzMzQsInkiOjI4MiwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UiLCJjb2xvciI6bnVsbH0seyJ4Ijo0NTY0LCJ5IjoyNzcsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIiwiY29sb3IiOm51bGx9LHsieCI6NDY1NSwieSI6MzgsInciOjIwNiwiaCI6MjA0LCJ0eXBlIjoicGxhdGZvcm0iLCJjb2xvciI6IiM2QzNCQUEifV0";
+        // NEW STARTER MAP
+        const STARTER_MAP = "W3sieCI6MTQwNCwieSI6MzQyLCJ3IjoxMjQsImgiOjEwLCJ0eXBlIjoicGxhdGZvcm0iLCJjb2xvciI6IiM2QzNCQUEifSx7IngiOjE0MTAsInkiOjM2MSwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjE0NTMsInkiOjM2MiwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjE0OTUsInkiOjM1NywidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjEzNzUsInkiOjM2NCwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjE1MzYsInkiOjM0MiwidyI6MzAsImgiOjMyLCJ0eXBlIjoic3Bpa2UifSx7IngiOjE3NDgsInkiOjM2NywidyI6MzAsImgiOjEyLCJ0eXBlIjoicGFkIn0seyJ4IjoxNjM1LCJ5IjoyMTAsInciOjExMiwiaCI6MjAsInR5cGUiOiJwbGF0Zm9ybSIsImNvbG9yIjoiIzZDM0JBQSJ9LHsieCI6MTgzMywieSI6MzU4LCJ3IjozMCwiaCI6MzAsInR5cGUiOiJzcGlrZSJ9LHsieCI6MTg3OSwieSI6MzY0LCJ3IjozMCwiaCI6MzAsInR5cGUiOiJzcGlrZSJ9LHsieCI6MjAwMywieSI6LTI2LCJ3IjozMzYsImgiOjIxNCwidHlwZSI6InBsYXRmb3JtIiwiY29sb3IiOiIjNkMzQkFBIn0seyJ4IjoyMTIwLCJ5IjozNjUsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoyMzMzLCJ5IjozNzAsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoyNTg0LCJ5IjozNjUsInciOjMwLCJoIjozMCwidHlwZSI6InBhZCJ9LHsieCI6MjcyOCwieSI6MjcwLCJ3IjozMCwiaCI6MzAsInR5cGUiOiJwYWQifSx7IngiOjI2MzEsInkiOjM2NSwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjI2OTUsInkiOjM2NSwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjI3NTMsInkiOjM2MCwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjI4MTAsInkiOjM2MywidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjI4NTUsInkiOjM2NCwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UifSx7IngiOjMxNjcsInkiOjI4MywidyI6MTk4LCJoIjozMCwidHlwZSI6InBsYXRmb3JtIiwiY29sb3IiOiIjNkMzQkFBIn0seyJ4IjozMzkzLCJ5IjozNTgsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMzUwLCJ5IjozNTIsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMzIxLCJ5IjozNTUsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMjY4LCJ5IjozNTUsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMjEyLCJ5IjozNTksInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMTYxLCJ5IjozNTksInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMTA3LCJ5IjozNTUsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMDU5LCJ5IjozNTYsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjozMDA0LCJ5IjozNjAsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoyOTY2LCJ5IjozNjUsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoyOTI5LCJ5IjozNjMsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoyODk2LCJ5IjozNjMsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoxODE1LCJ5IjozNjksInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoxNzk5LCJ5IjozNzYsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoxODU2LCJ5IjozNjQsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoxNjM2LCJ5IjoxODcsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoxNjc2LCJ5IjoxODUsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoxNzE2LCJ5IjoxODksInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIn0seyJ4IjoyNDQ0LCJ5IjoyMzksInciOjEwLCJoIjoxNjYsInR5cGUiOiJjaGVja3BvaW50In0seyJ4IjoyOTYwLCJ5IjoyNjksInciOjMwLCJoIjozMCwidHlwZSI6InBhZCJ9LHsieCI6MzkxNCwieSI6MzU2LCJ3IjozMCwiaCI6MzAsInR5cGUiOiJzcGlrZSIsImNvbG9yIjpudWxsfSx7IngiOjM5MDcsInkiOjE4MSwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UiLCJjb2xvciI6bnVsbH0seyJ4IjozOTQ4LCJ5IjoxOTMsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIiwiY29sb3IiOm51bGx9LHsieCI6Mzk1MiwieSI6MzYwLCJ3IjozMCwiaCI6MzAsInR5cGUiOiJzcGlrZSIsImNvbG9yIjpudWxsfSx7IngiOjM5MjksInkiOjE5NSwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UiLCJjb2xvciI6bnVsbH0seyJ4Ijo0Mjc3LCJ5IjozMTAsInciOjQzOCwiaCI6NjgsInR5cGUiOiJwbGF0Zm9ybSIsImNvbG9yIjoiIzZDM0JBQSJ9LHsieCI6NDI0MiwieSI6MzU5LCJ3IjozMCwiaCI6MzAsInR5cGUiOiJzcGlrZSIsImNvbG9yIjpudWxsfSx7IngiOjQzMzQsInkiOjI4MiwidyI6MzAsImgiOjMwLCJ0eXBlIjoic3Bpa2UiLCJjb2xvciI6bnVsbH0seyJ4Ijo0NTY0LCJ5IjoyNzcsInciOjMwLCJoIjozMCwidHlwZSI6InNwaWtlIiwiY29sb3IiOm51bGx9LHsieCI6NDY1NSwieSI6MzgsInciOjIwNiwiaCI6MjA0LCJ0eXBlIjoicGxhdGZvcm0iLCJjb2xvciI6IiM2QzNCQUEifV0=";
 
         let isEditor = false;
         let isPaused = false;
@@ -115,10 +115,7 @@
                 selectedObj = newObj;
             }
         });
-        if (!onGround) {
-        // Limits the rotation to exactly 90 degrees per jump
-        player.rotation = Math.min(player.rotation + 5, 90);
-        }
+
         function resetPlayer(fullRestart) {
             if (fullRestart) player.checkpoints = [{x: 50, y: 300}];
             const cp = player.checkpoints[player.checkpoints.length - 1];
@@ -140,7 +137,8 @@
                 if (onGround) {
                     player.y = 380 - player.h;
                     player.vy = 0;
-                    player.rotation = Math.round(player.rotation / 45) * 45;
+                    // Cap and snap perfectly on landing
+                    player.rotation = Math.round(player.rotation / 90) * 90;
                 }
 
                 map.forEach(obj => {
@@ -164,12 +162,20 @@
                     }
                 });
 
-                if (keys['Space'] && onGround) player.vy = player.jump;
-                if (!onGround) player.rotation += 5;
+                if (keys['Space'] && onGround) {
+                    player.vy = player.jump;
+                    // Reset rotation to allow for a fresh 90 degree turn
+                    player.rotation = 0;
+                }
+                
+                // Rotates 6 degrees per frame while in air for a clean 90-degree landing
+                if (!onGround) {
+                    player.rotation += 6;
+                }
+                
                 if (player.dead) resetPlayer(false);
 
             } else if (isEditor) {
-                // Lowered shift+WASD movement speed to 2px for better precision
                 const moveAmt = 2; 
                 if (keys['ShiftLeft'] || keys['ShiftRight']) {
                     if (selectedObj) {
@@ -241,7 +247,6 @@
                     ctx.lineTo(obj.x + obj.w, obj.y + obj.h);
                     ctx.fill();
                 } else if (obj.type === 'spikepit') {
-                    // Render 3 miniature spikes
                     ctx.beginPath();
                     ctx.moveTo(obj.x, obj.y + obj.h);
                     ctx.lineTo(obj.x + obj.w * 0.16, obj.y);
