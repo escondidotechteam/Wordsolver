@@ -23,7 +23,10 @@
 
     <script>
 const c = document.getElementById('c'), ctx = c.getContext('2d');
-let bird = { x: 50, y: 150, v: 0, g: 0.22, jump: 3.6, thrust: 0.5, r: 14 };
+
+// --- TWEAKED BIRD CONTROLS ---
+// Lowered 'jump' to 2.5 and 'thrust' to 0.3 for smaller leaps
+let bird = { x: 50, y: 150, v: 0, g: 0.22, jump: 2.5, thrust: 0.3, r: 14 };
 let pipes = [], clouds = [], frame = 0, score = 0, gameOver = false, isHolding = false;
 
 function reset() {
@@ -42,7 +45,7 @@ function drawBird(x, y, r, v) {
     ctx.fill();
     ctx.strokeStyle = 'black'; ctx.lineWidth = 2; ctx.stroke();
 
-    // Wing (moves faster when rising)
+    // Wing
     let wingWiggle = isHolding ? Math.sin(frame * 0.5) * 5 : 0;
     ctx.fillStyle = 'white';
     ctx.beginPath();
@@ -89,9 +92,7 @@ function loop() {
     if (!gameOver) {
         // Continuous Thrust Logic
         if (isHolding) {
-            // Apply upward force every frame the button is held
             bird.v -= bird.thrust; 
-            // Cap the upward speed so it doesn't get glitchy
             if (bird.v < -7) bird.v = -7; 
         }
 
@@ -146,7 +147,6 @@ const startAction = (e) => {
     if (e.type === 'touchstart') e.preventDefault();
     if (gameOver) { reset(); return; }
     isHolding = true;
-    // Initial hop on first click
     bird.v = -bird.jump;
 };
 
