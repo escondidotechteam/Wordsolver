@@ -132,9 +132,9 @@
         
         <div class="menu-grid">
             <a href="solver.html" class="nav-btn btn-word">Word Search Solver</a>
-            <a href="flappy.html" class="nav-btn btn-flappy">Flappy Bird Pro</a>
-            <a href="geometry.html" class="nav-btn btn-geometry">Geometry Dash Ultra</a>
-            <a href="polytrack/index.html" class="nav-btn btn-poly">Polytrack (Local)</a>
+            <a href="flappy.html" class="nav-btn btn-flappy">Jumpy Parrot</a>
+            <a href="geometry.html" class="nav-btn btn-geometry">Geometry Sprint</a>
+            <a href="polytrack/index.html" class="nav-btn btn-poly">Polytrack (404)</a>
         </div>
 
         <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
@@ -149,6 +149,8 @@
         <textarea id="lvl-data" placeholder="Paste your level string here..."></textarea>
         <button style="background-color: #9b59b6;" onclick="postLevel()">Share Level</button>
         <p id="share-status" style="font-size:12px; color:#aaa;"></p>
+        
+        <p style="margin-top: 25px;"><a href="#" onclick="logout()" style="color: #e74c3c; font-size: 13px; text-decoration: none;">Log out / Clear session</a></p>
     </div>
 
     <script>
@@ -171,16 +173,35 @@
         // --- 2. MULTI-PASSCODE GATE ---
         const ALLOWED_HASHES = ["QURtaW4xOTc=", "YWhjZDEwNg==", "UEBzc3cwcmQ0MzIx"]; 
 
+        // Runs automatically as soon as the page loads
+        window.onload = function() {
+            const savedSession = localStorage.getItem('isAuthorized');
+            if (savedSession === 'true') {
+                // If they previously signed in, instantly bypass the login box
+                document.getElementById('gate-area').classList.add('hidden');
+                document.getElementById('menu-area').classList.remove('hidden');
+                loadLevels();
+            }
+        };
+
         function checkAccess() {
             const pin = document.getElementById('passcode').value;
             
             if (ALLOWED_HASHES.includes(btoa(pin))) {
+                // Save the session so they stay logged in
+                localStorage.setItem('isAuthorized', 'true');
+                
                 document.getElementById('gate-area').classList.add('hidden');
                 document.getElementById('menu-area').classList.remove('hidden');
                 loadLevels();
             } else {
                 document.getElementById('err').innerText = "Access Denied: Invalid Authorization.";
             }
+        }
+
+        function logout() {
+            localStorage.removeItem('isAuthorized');
+            location.reload();
         }
 
         // --- 3. LEVEL SHARING LOGIC ---
