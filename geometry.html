@@ -115,7 +115,10 @@
                 selectedObj = newObj;
             }
         });
-
+        if (!onGround) {
+        // Limits the rotation to exactly 90 degrees per jump
+        player.rotation = Math.min(player.rotation + 5, 90);
+        }
         function resetPlayer(fullRestart) {
             if (fullRestart) player.checkpoints = [{x: 50, y: 300}];
             const cp = player.checkpoints[player.checkpoints.length - 1];
