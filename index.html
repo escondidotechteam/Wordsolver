@@ -75,6 +75,46 @@
         .btn-flappy { background: #f1c40f; color: #000; }
         .btn-geometry { background: #2ecc71; }
         .btn-poly { background: #e67e22; }
+        /* Level Board Styles */
+        .level-board {
+            background: #141414;
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #2a2a2a;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .level-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #222;
+        }
+        .level-item:last-child { border-bottom: none; }
+        .play-lvl-btn {
+            background: #3498db;
+            padding: 6px 12px;
+            border-radius: 4px;
+            color: white;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        textarea { height: 80px; resize: none; font-family: monospace; }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #444;
+            border-radius: 6px;
+            background: #2b2b2b;
+            color: #fff;
+            font-size: 15px;
+            box-sizing: border-box;
+        }
     </style>
 </head>
 <body>
@@ -93,6 +133,18 @@
     </div>
 
     <div id="menu-area" class="box hidden">
+        <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
+
+        <h3>Community Geometry Levels</h3>
+        <div class="level-board" id="levels-container">
+            <p style="color:#666; font-size: 13px; text-align: center;">Loading shared levels...</p>
+        </div>
+
+        <h3>Post Your Level</h3>
+        <input type="text" id="lvl-title" placeholder="Level Title (e.g., Extreme Demon)">
+        <textarea id="lvl-data" placeholder="Paste your level string here..."></textarea>
+        <button style="background-color: #9b59b6;" onclick="postLevel()">Share Level</button>
+        <p id="share-status" style="font-size:12px; color:#aaa;"></p>
         <h2>Main Menu Hub</h2>
         <p style="color: #888; font-size: 14px; margin-bottom: 20px;">Welcome back. Select an application:</p>
         
@@ -133,6 +185,48 @@
             } else {
                 document.getElementById('err').innerText = "Access Denied: Invalid Authorization.";
             }
+        }
+        // --- LEVEL SHARING LOGIC ---
+        let localLevels = [
+            { title: "Stereo Madness Classic", data: "BASE64_LEVEL_DATA_HERE" },
+            { title: "The Flying Vault", data: "BASE64_LEVEL_DATA_HERE" }
+        ];
+
+        function loadLevels() {
+            const container = document.getElementById('levels-container');
+            container.innerHTML = "";
+            localLevels.forEach(lvl => {
+                const div = document.createElement('div');
+                div.className = "level-item";
+                div.innerHTML = `
+                    <div>
+                        <strong style="font-size:14px;">${lvl.title}</strong>
+                    </div>
+                    <a href="geometry.html?level=${encodeURIComponent(lvl.data)}" class="play-lvl-btn">Play</a>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function postLevel() {
+            const title = document.getElementById('lvl-title').value.trim();
+            const data = document.getElementById('lvl-data').value.trim();
+            const status = document.getElementById('share-status');
+
+            if (!title || !data) {
+                status.innerText = "Error: Title and Level Data required.";
+                status.style.color = "#e74c3c";
+                return;
+            }
+
+            localLevels.push({ title: title, data: data });
+            loadLevels();
+
+            status.innerText = "Level posted successfully to the list!";
+            status.style.color = "#2ecc71";
+
+            document.getElementById('lvl-title').value = "";
+            document.getElementById('lvl-data').value = "";
         }
     </script>
 </body>
