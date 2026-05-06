@@ -57,7 +57,6 @@
         button:hover { background: #27ae60; }
         .hidden { display: none !important; }
         
-        /* Menu Styles */
         .menu-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -82,7 +81,6 @@
         .btn-poly { background: #e67e22; }
         .btn-feedback { background: #9b59b6; }
 
-        /* Level Board */
         .level-board {
             background: #141414;
             border-radius: 8px;
@@ -129,8 +127,6 @@
 
     <div id="menu-area" class="box hidden">
         <h2>Main Menu Hub</h2>
-        <p style="color: #888; font-size: 14px; margin-bottom: 20px;">Welcome. Select an application:</p>
-        
         <div class="menu-grid">
             <a href="solver.html" class="nav-btn btn-word">Word Search Solver</a>
             <a href="flappy.html" class="nav-btn btn-flappy">Floppy Bird</a>
@@ -143,58 +139,52 @@
 
         <h3>Community Geometry Levels</h3>
         <div class="level-board" id="levels-container">
-            <p style="color:#666; font-size: 13px; text-align: center;">No custom levels shared yet.</p>
+            <p style="color:#666; font-size: 13px; text-align: center;">Loading levels...</p>
         </div>
 
         <h3>Post Your Level</h3>
-        <input type="text" id="lvl-title" placeholder="Level Title (e.g., Extreme Demon)">
+        <input type="text" id="lvl-title" placeholder="Level Title">
         <textarea id="lvl-data" placeholder="Paste your level string here..."></textarea>
         <button style="background-color: #9b59b6;" onclick="postLevel()">Share Level</button>
         <p id="share-status" style="font-size:12px; color:#aaa;"></p>
         
-        <p style="margin-top: 25px;"><a href="#" onclick="logout()" style="color: #e74c3c; font-size: 13px; text-decoration: none;">Log out / Clear session</a></p>
+        <p style="margin-top: 25px;"><a href="#" onclick="logout()" style="color: #e74c3c; font-size: 13px; text-decoration: none;">Log out</a></p>
     </div>
 
     <script>
-        // --- 1. IPAD ONLY HARDWARE FILTER ---
+        // --- 1. IPAD FILTER ---
         const ua = navigator.userAgent;
         const isIPad = /iPad|Macintosh/.test(ua) && 'ontouchend' in document;
-
-        const enforceDeviceCheck = true; 
-
-        if (enforceDeviceCheck && !isIPad) {
+        if (!isIPad) {
             document.body.innerHTML = document.getElementById('device-error').innerHTML;
             document.body.style.backgroundColor = "#fff";
             document.body.style.color = "#000";
-            document.body.style.fontFamily = "sans-serif";
             document.body.style.textAlign = "left";
             document.body.style.padding = "20px";
             window.stop(); 
         }
 
-        // --- 2. MULTI-PASSCODE GATE ---
-        const ALLOWED_HASHES = ["Q2hyaXM=", "TW9ua2V5c2xheWVyNDE=", "QWRtaW4xOTc", "Y28xMjM=", "aUxvdmVNZWdhbkZveFRvZXMg", "NTY2NTU2NjU=", "Umlja3kzMjE="]; 
+        // --- 2. PASSCODES ---
+        const ALLOWED_HASHES = ["Q2hyaXM=", "TW9ua2V5c2xheWVyNDE=", "QWRtaW4xOTc=", "Y28xMjM=", "aUxvdmVNZWdhbkZveFRvZXMg", "NTY2NTU2NjU=", "Umlja3kzMjE="]; 
 
         window.onload = function() {
-            const savedSession = localStorage.getItem('isAuthorized');
-            if (savedSession === 'true') {
-                document.getElementById('gate-area').classList.add('hidden');
-                document.getElementById('menu-area').classList.remove('hidden');
-                loadLevels();
-            }
+            if (localStorage.getItem('isAuthorized') === 'true') { showMenu(); }
         };
 
         function checkAccess() {
             const pin = document.getElementById('passcode').value;
-            
             if (ALLOWED_HASHES.includes(btoa(pin))) {
                 localStorage.setItem('isAuthorized', 'true');
-                document.getElementById('gate-area').classList.add('hidden');
-                document.getElementById('menu-area').classList.remove('hidden');
-                loadLevels();
+                showMenu();
             } else {
-                document.getElementById('err').innerText = "Access Denied: Invalid Authorization.";
+                document.getElementById('err').innerText = "Access Denied.";
             }
+        }
+
+        function showMenu() {
+            document.getElementById('gate-area').classList.add('hidden');
+            document.getElementById('menu-area').classList.remove('hidden');
+            loadLevels();
         }
 
         function logout() {
@@ -202,37 +192,22 @@
             location.reload();
         }
 
-        // --- 3. CLOUD LEVEL SHARING SYSTEM (Using Google Script) ---
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzm-4ut1y2hqjtLMMkrgBstK-fE6aB8m4fvhyEY74U-qg4lHuccOeSDY_2fUILGXiXcUg/exec"; 
+        // --- 3. GOOGLE SCRIPT ---
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzOsLPjHk6XRKI3qWWHyRQqXFbsK2C1brTL96i6rOrnPy2W_wreJg4AfJPjfoNjC7a4VQ/exec"; 
 
         function loadLevels() {
             const container = document.getElementById('levels-container');
-            container.innerHTML = '<p style="color:#666; font-size: 13px; text-align: center;">Fetching cloud levels...</p>';
-
-            fetch(GOOGLE_SCRIPT_URL)
-                .then(response => response.json())
+            fetch(SCRIPT_URL)
+                .then(res => res.json())
                 .then(levels => {
                     container.innerHTML = "";
-                    if (levels.length === 0) {
-                        container.innerHTML = '<p style="color:#666; font-size: 13px; text-align: center;">No custom levels shared yet.</p>';
-                        return;
-                    }
-
                     levels.forEach(lvl => {
                         const div = document.createElement('div');
                         div.className = "level-item";
-                        div.innerHTML = `
-                            <div>
-                                <strong style="font-size:14px;">${lvl.title}</strong>
-                            </div>
-                            <a href="geometry.html?level=${encodeURIComponent(lvl.data)}" class="play-lvl-btn">Play</a>
-                        `;
+                        div.innerHTML = `<div><strong>${lvl.title}</strong></div>
+                                         <a href="geometry.html?level=${encodeURIComponent(lvl.data)}" class="play-lvl-btn">Play</a>`;
                         container.appendChild(div);
                     });
-                })
-                .catch(err => {
-                    container.innerHTML = '<p style="color:#e74c3c; font-size: 13px; text-align: center;">Error loading cloud levels.</p>';
-                    console.error(err);
                 });
         }
 
@@ -240,39 +215,17 @@
             const title = document.getElementById('lvl-title').value.trim();
             const data = document.getElementById('lvl-data').value.trim();
             const status = document.getElementById('share-status');
+            if (!title || !data) return;
 
-            if (!title || !data) {
-                status.innerText = "Error: Title and Level Data required.";
-                status.style.color = "#e74c3c";
-                return;
-            }
-
-            status.innerText = "Uploading level...";
-            status.style.color = "#f1c40f";
-
-            const newLevel = { title: title, data: data };
-
-            fetch(GOOGLE_SCRIPT_URL, {
-                redirect: "follow",
+            status.innerText = "Sharing...";
+            fetch(SCRIPT_URL, {
                 method: "POST",
-                body: JSON.stringify(newLevel),
-                headers: {
-                    "Content-Type": "text/plain;charset=utf-8"
-                }
-            })
-            .then(res => res.json())
-            .then(response => {
-                status.innerText = "Level successfully saved to the cloud!";
-                status.style.color = "#2ecc71";
-                
-                document.getElementById('lvl-title').value = "";
-                document.getElementById('lvl-data').value = "";
+                body: JSON.stringify({ title, data }),
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                redirect: "follow"
+            }).then(() => {
+                status.innerText = "Success!";
                 loadLevels();
-            })
-            .catch(err => {
-                status.innerText = "Error uploading to cloud.";
-                status.style.color = "#e74c3c";
-                console.error(err);
             });
         }
     </script>
