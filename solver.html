@@ -3,45 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Private Arcade</title>
+    <title>Word Search Solver</title>
+    <script>
+        // --- SESSION CHECK ---
+        // If the user hasn't logged in through index.html, kick them back.
+        if (localStorage.getItem('isAuthorized') !== 'true') {
+            alert("Access Denied: Please log in through the Main Menu.");
+            window.location.href = "index.html"; 
+        }
+    </script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: #121212;
             color: #ffffff;
             margin: 0;
-            padding: 0;
+            padding: 20px;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            height: 100vh;
-            text-align: center;
+            min-height: 100vh;
         }
-        .box {
+        .container {
             background: #1e1e1e;
-            padding: 40px;
+            padding: 30px;
             border-radius: 12px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-            max-width: 450px;
-            width: 90%;
+            max-width: 600px;
+            width: 95%;
             border: 1px solid #333;
         }
-        h2 { margin-top: 0; color: #fff; }
-        input[type="password"] {
+        h2 { margin-top: 0; text-align: center; }
+        textarea {
             width: 100%;
+            height: 150px;
             padding: 12px;
-            margin: 15px 0;
+            margin: 10px 0;
             border: 1px solid #444;
             border-radius: 6px;
             background: #2b2b2b;
             color: #fff;
-            font-size: 16px;
+            font-family: monospace;
+            font-size: 14px;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #444;
+            border-radius: 6px;
+            background: #2b2b2b;
+            color: #fff;
             box-sizing: border-box;
         }
         button {
             width: 100%;
             padding: 12px;
-            background: #2ecc71;
+            background: #3498db;
             color: white;
             border: none;
             border-radius: 6px;
@@ -50,92 +70,88 @@
             font-weight: bold;
             transition: background 0.2s;
         }
-        button:hover { background: #27ae60; }
-        .hidden { display: none; }
-        
-        /* Menu Styles */
-        .menu-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
+        button:hover { background: #2980b9; }
+        #results {
             margin-top: 20px;
+            padding: 15px;
+            background: #141414;
+            border-radius: 8px;
+            border: 1px solid #2a2a2a;
+            min-height: 50px;
+            word-wrap: break-word;
         }
-        .nav-btn {
-            display: block;
-            padding: 14px;
-            color: white;
+        .back-link {
+            margin-top: 20px;
+            color: #888;
             text-decoration: none;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 16px;
-            transition: transform 0.2s, filter 0.2s;
+            font-size: 14px;
         }
-        .nav-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
-        .btn-word { background: #3498db; }
-        .btn-flappy { background: #f1c40f; color: #000; }
-        .btn-geometry { background: #2ecc71; }
-        .btn-poly { background: #e67e22; }
+        .back-link:hover { color: #fff; }
     </style>
 </head>
 <body>
 
-    <div id="device-error" class="hidden">
-        <h1>404 Not Found</h1>
-        <p>The requested URL was not found on this server.</p>
-    </div>
-
-    <div id="gate-area" class="box">
-        <h2>System Verification</h2>
-        <p style="color: #888; font-size: 14px;">Enter authorization passcode to proceed.</p>
-        <input type="password" id="passcode" placeholder="Passcode">
-        <button onclick="checkAccess()">Unlock Menu</button>
-        <p id="err" style="color: #e74c3c; font-size: 14px; margin-top: 10px;"></p>
-    </div>
-
-    <div id="menu-area" class="box hidden">
-        <h2>Main Menu Hub</h2>
-        <p style="color: #888; font-size: 14px; margin-bottom: 20px;">Welcome back. Select an application:</p>
+    <div class="container">
+        <h2>Word Solver</h2>
+        <p style="color: #888; font-size: 13px;">Paste your letter grid below (rows of letters):</p>
+        <textarea id="grid-input" placeholder="ABCDE&#10;FGHIJ&#10;KLMNO"></textarea>
         
-        <div class="menu-grid">
-            <a href="solver.html" class="nav-btn btn-word">Word Search Solver</a>
-            <a href="flappy.html" class="nav-btn btn-flappy">Flappy Bird Pro</a>
-            <a href="geometry.html" class="nav-btn btn-geometry">Geometry Dash Ultra</a>
-            <a href="polytrack/index.html" class="nav-btn btn-poly">Polytrack (Local)</a>
+        <p style="color: #888; font-size: 13px;">Enter word to find:</p>
+        <input type="text" id="word-input" placeholder="Search word...">
+        
+        <button onclick="solve()">Locate Word</button>
+
+        <div id="results">
+            <span style="color: #666;">Results will appear here...</span>
         </div>
     </div>
 
+    <a href="index.html" class="back-link">← Return to Main Menu</a>
+
     <script>
-        // --- 1. HARDWARE/DEVICE FILTER ---
-        // Change these to match the exact device allowed.
-        // For example, setting minWidth to 1000 blocks mobile phones.
-        const REQUIRED_MIN_WIDTH = 800; 
-        const FORBIDDEN_PLATFORMS = ["iPhone", "Android"];
+        function solve() {
+            const gridText = document.getElementById('grid-input').value.toUpperCase().trim();
+            const word = document.getElementById('word-input').value.toUpperCase().trim();
+            const resultsDiv = document.getElementById('results');
 
-        const isMobile = FORBIDDEN_PLATFORMS.some(p => navigator.userAgent.includes(p));
-        const isSmallScreen = window.innerWidth < REQUIRED_MIN_WIDTH;
-
-        if (isMobile || isSmallScreen) {
-            // Instantly fail and make the page look like a dead link
-            document.body.innerHTML = document.getElementById('device-error').innerHTML;
-            document.body.style.backgroundColor = "#fff";
-            document.body.style.color = "#000";
-            document.body.style.fontFamily = "sans-serif";
-            document.body.style.textAlign = "left";
-            document.body.style.padding = "20px";
-            window.stop(); // Stop loading further scripts
-        }
-
-        // --- 2. PASSCODE GATE ---
-        const SECRET_HASH = "1234"; // <-- Put your secret passcode here!
-
-        function checkAccess() {
-            const pin = document.getElementById('passcode').value;
-            if (pin === SECRET_HASH) {
-                document.getElementById('gate-area').classList.add('hidden');
-                document.getElementById('menu-area').classList.remove('hidden');
-            } else {
-                document.getElementById('err').innerText = "Access Denied: Invalid Authorization.";
+            if (!gridText || !word) {
+                resultsDiv.innerHTML = "<span style='color: #e74c3c;'>Please enter both a grid and a word.</span>";
+                return;
             }
+
+            const grid = gridText.split('\n').map(row => row.replace(/\s+/g, '').split(''));
+            const rows = grid.length;
+            const cols = grid[0].length;
+
+            // Simple 8-direction search logic
+            const directions = [
+                [0, 1], [0, -1], [1, 0], [-1, 0],
+                [1, 1], [1, -1], [-1, 1], [-1, -1]
+            ];
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    if (grid[r][c] === word[0]) {
+                        for (let [dr, dc] of directions) {
+                            let match = true;
+                            for (let i = 1; i < word.length; i++) {
+                                let nr = r + dr * i;
+                                let nc = c + dc * i;
+                                if (nr < 0 || nr >= rows || nc < 0 || nc >= cols || grid[nr][nc] !== word[i]) {
+                                    match = false;
+                                    break;
+                                }
+                            }
+                            if (match) {
+                                resultsDiv.innerHTML = `<span style='color: #2ecc71;'>Found <b>${word}</b> starting at Row: ${r + 1}, Col: ${c + 1}</span>`;
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+
+            resultsDiv.innerHTML = "<span style='color: #e74c3c;'>Word not found in grid.</span>";
         }
     </script>
 </body>
