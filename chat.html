@@ -2,45 +2,44 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Chat</title>
+    </title>Live Chat - Debug Mode</title>
     <style>
-        body { background: #121212; color: white; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; margin: 0; }
-        #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
-        .msg { background: #1e1e1e; padding: 12px; border-radius: 10px; max-width: 80%; border: 1px solid #333; align-self: flex-start; }
-        .msg.me { align-self: flex-end; border-color: #2ecc71; background: #1a2e22; }
-        .msg b { color: #2ecc71; display: block; margin-bottom: 4px; font-size: 0.85em; }
-        .img-msg { max-width: 100%; border-radius: 6px; margin-top: 8px; }
-        .input-area { background: #1e1e1e; padding: 15px; display: flex; gap: 10px; border-top: 1px solid #333; align-items: center; }
-        input[type="text"] { flex: 1; padding: 12px; border-radius: 6px; border: 1px solid #444; background: #2b2b2b; color: white; outline: none; }
-        button { background: #2ecc71; border: none; color: white; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        #ad-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
-        #timer-circle { width: 80px; height: 80px; border: 5px solid #2ecc71; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bold; margin-bottom: 20px; }
+        body { background: #121212; color: white; font-family: sans-serif; margin: 0; padding: 20px; }
+        #debug-log { background: #000; color: #0f0; padding: 10px; font-family: monospace; font-size: 12px; border: 1px solid #333; height: 100px; overflow-y: auto; margin-bottom: 10px; }
+        #chat-box { height: 300px; border: 1px solid #444; overflow-y: auto; margin-bottom: 10px; padding: 10px; }
+        .input-area { display: flex; gap: 5px; }
+        input { flex: 1; padding: 10px; background: #222; color: #fff; border: 1px solid #444; }
     </style>
 </head>
 <body>
 
-<div id="ad-overlay">
-    <div id="timer-circle">30</div>
-    <p>Watching Ad for HD Upload Access...</p>
-</div>
+    <h3>Chat Debugger</h3>
+    <div id="debug-log">System: Waiting for initialization...</div>
+    
+    <div id="chat-box"></div>
 
-<div id="chat-box">
-    <p style="text-align:center; color:#444;">Connecting to server...</p>
-</div>
-
-<div class="input-area">
-    <input type="file" id="imgInput" accept="image/*" style="display:none">
-    <button onclick="window.checkImageUpload()" id="imgBtn">📷</button>
-    <input type="text" id="msgInput" placeholder="Type a message...">
-    <button id="sendBtn">Send</button>
-</div>
+    <div class="input-area">
+        <input type="text" id="msgInput" placeholder="Type here...">
+        <button id="sendBtn" style="padding:10px; background:#2ecc71; border:none; color:white;">Send</button>
+    </div>
 
 <script type="module">
-    // Using version 10.7.1 for stability
+    // --- DEBUGGER FUNCTION ---
+    function log(msg) {
+        const d = document.getElementById('debug-log');
+        d.innerHTML += "<br>> " + msg;
+        d.scrollTop = d.scrollHeight;
+    }
+
+    // Capture errors and show them as iPad Alerts
+    window.onerror = function(m, s, l) {
+        alert("CRASH AT LINE " + l + ": " + m);
+    };
+
+    log("Starting Firebase...");
+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDhYmRfVmyM011-6dFsjalCFVGoYmIL-z4",
@@ -52,86 +51,48 @@
         measurementId: "G-EVPTTME7FD"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const storage = getStorage(app);
+    try {
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        log("Firebase Initialized.");
 
-    let isHD = false;
-    let imgCount = 0;
-    const currentUser = localStorage.getItem('username') || "Guest_" + Math.floor(Math.random()*100);
+        const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
+        
+        log("Connecting to Firestore...");
+        onSnapshot(q, (snapshot) => {
+            log("Connection Successful! " + snapshot.size + " messages found.");
+            const box = document.getElementById('chat-box');
+            box.innerHTML = "";
+            snapshot.forEach(doc => {
+                const p = document.createElement('p');
+                p.textContent = doc.data().user + ": " + doc.data().text;
+                box.appendChild(p);
+            });
+        }, (error) => {
+            log("FIRESTORE ERROR: " + error.message);
+            alert("Firestore Error: " + error.message);
+        });
 
-    // --- AD LOGIC ---
-    window.checkImageUpload = function() {
-        if (imgCount >= 5) { alert("Max 5 images/min"); return; }
-        if (confirm("Watch 30s ad for HD? (Cancel for 720p)")) { startAd(); } 
-        else { document.getElementById('imgInput').click(); }
-    };
-
-    function startAd() {
-        const overlay = document.getElementById('ad-overlay');
-        const circle = document.getElementById('timer-circle');
-        overlay.style.display = 'flex';
-        let time = 30;
-        const timer = setInterval(() => {
-            time--;
-            circle.innerText = time;
-            if (time <= 0) {
-                clearInterval(timer);
-                overlay.style.display = 'none';
-                isHD = true;
-                document.getElementById('imgInput').click();
+        document.getElementById('sendBtn').onclick = async () => {
+            const val = document.getElementById('msgInput').value;
+            log("Attempting to send...");
+            try {
+                await addDoc(collection(db, "messages"), {
+                    text: val,
+                    user: localStorage.getItem('username') || "TestUser",
+                    createdAt: serverTimestamp()
+                });
+                log("Message sent!");
+                document.getElementById('msgInput').value = "";
+            } catch(e) {
+                log("SEND ERROR: " + e.message);
             }
-        }, 1000);
+        };
+
+    } catch (e) {
+        log("INIT ERROR: " + e.message);
+        alert("Init Error: " + e.message);
     }
-
-    // --- SEND LOGIC ---
-    document.getElementById('sendBtn').onclick = async () => {
-        const text = document.getElementById('msgInput').value.trim();
-        const file = document.getElementById('imgInput').files[0];
-        if (!text && !file) return;
-
-        let url = null;
-        if (file) {
-            const fileRef = ref(storage, `chat/${Date.now()}_${file.name}`);
-            await uploadBytes(fileRef, file);
-            url = await getDownloadURL(fileRef);
-            imgCount++;
-        }
-
-        await addDoc(collection(db, "messages"), {
-            text, user: currentUser, img: url, isHD, createdAt: serverTimestamp()
-        });
-
-        document.getElementById('msgInput').value = "";
-        document.getElementById('imgInput').value = "";
-        isHD = false;
-    };
-
-    // --- RECEIVE LOGIC ---
-    const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
-    onSnapshot(q, (snapshot) => {
-        const box = document.getElementById('chat-box');
-        box.innerHTML = "";
-        const now = Date.now();
-        const limit = 5 * 60 * 1000;
-
-        snapshot.forEach((doc) => {
-            const data = doc.data();
-            // Handle the "null" timestamp while Firebase is processing
-            const msgTime = data.createdAt ? data.createdAt.toDate().getTime() : now;
-
-            if ((now - msgTime < limit) || localStorage.getItem('saveToDevice') === 'true') {
-                const div = document.createElement('div');
-                div.className = `msg ${data.user === currentUser ? 'me' : ''}`;
-                div.innerHTML = `<b>${data.user}</b>${data.text}`;
-                if (data.img) div.innerHTML += `<br><img src="${data.img}" class="img-msg">`;
-                box.appendChild(div);
-            }
-        });
-        box.scrollTop = box.scrollHeight;
-    });
-
-    if (Notification.permission === "default") Notification.requestPermission();
 </script>
 </body>
 </html>
