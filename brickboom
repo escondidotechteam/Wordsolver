@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Block Blast Puzzle</title>
+    <style>
+        canvas { border: 2px solid #333; background: #eee; cursor: pointer; }
+        body { display: flex; flex-direction: column; align-items: center; font-family: sans-serif; }
+    </style>
+</head>
+<body>
+    <h1>Block Blast</h1>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <p>Score: <span id="score">0</span></p>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const gridSize = 8;
+        const cellSize = 50;
+        let score = 0;
+
+        // Initialize empty grid
+        let grid = Array(gridSize).fill().map(() => Array(gridSize).fill(0));
+
+        function drawGrid() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let r = 0; r < gridSize; r++) {
+                for (let c = 0; c < gridSize; c++) {
+                    ctx.strokeStyle = '#ccc';
+                    ctx.strokeRect(c * cellSize, r * cellSize, cellSize, cellSize);
+                    if (grid[r][c] === 1) {
+                        ctx.fillStyle = '#4CAF50';
+                        ctx.fillRect(c * cellSize + 2, r * cellSize + 2, cellSize - 4, cellSize - 4);
+                    }
+                }
+            }
+        }
+
+        // Logic to clear lines and update score
+        function checkLines() {
+            let linesCleared = 0;
+            // Check rows
+            for (let r = 0; r < gridSize; r++) {
+                if (grid[r].every(cell => cell === 1)) {
+                    grid[r].fill(0);
+                    linesCleared++;
+                }
+            }
+            // Add column checking and combo multiplier logic here
+            score += linesCleared * 100;
+            document.getElementById('score').innerText = score;
+            drawGrid();
+        }
+
+        // Handle simple click-to-place for demonstration
+        canvas.onclick = (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const c = Math.floor(x / cellSize);
+            const r = Math.floor(y / cellSize);
+            
+            if (grid[r][c] === 0) {
+                grid[r][c] = 1; // Basic placement
+                checkLines();
+            }
+        };
+
+        drawGrid();
+    </script>
+</body>
+</html>
