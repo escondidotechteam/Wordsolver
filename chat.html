@@ -3,57 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Chat</title>
+    <title>Arcade Hub - Live Chat</title>
     <style>
-        body { background: #121212; color: white; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; margin: 0; }
+        body { background: #121212; color: white; font-family: 'Courier New', Courier, monospace; display: flex; flex-direction: column; height: 100vh; margin: 0; overflow: hidden; }
         
-        /* Header */
-        .chat-header { background: #1e1e1e; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
-        .header-btns { display: flex; gap: 8px; }
-        .exit-btn { background: #e74c3c; padding: 8px 12px; border-radius: 5px; text-decoration: none; color: white; font-weight: bold; font-size: 12px; border:none; cursor:pointer; }
-        .room-info { font-size: 14px; color: #2ecc71; font-weight: bold; }
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+        .chat-section { flex: 3; display: flex; flex-direction: column; position: relative; border-right: 4px solid #1e1e1e; }
+        
+        /* Header styling from your sketch */
+        .chat-header { background: #000; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; }
+        .chat-header h1 { margin: 0; font-size: 36px; letter-spacing: 2px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%; }
+        
+        .sidebar { flex: 1; background: #000; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        .sidebar h2 { font-size: 20px; margin-bottom: 15px; color: #fff; border-bottom: 2px solid #2ecc71; width: 100%; text-align: center; padding-bottom: 5px; }
+        
+        /* Sidebar Room Cards */
+        #room-list { width: 100%; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+        .room-card { background: #1a1a1a; border: 1px solid #444; border-radius: 4px; padding: 10px; width: 90%; }
+        .room-card h4 { margin: 0 0 5px 0; color: #2ecc71; font-size: 14px; }
+        .open-btn { background: #a30000; color: white; border: none; padding: 4px 8px; border-radius: 2px; font-weight: bold; cursor: pointer; float: right; font-size: 10px; }
 
-        /* Settings Modal */
-        #settings-modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#222; padding:20px; border-radius:10px; border:1px solid #2ecc71; z-index:100; }
+        #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: #222; }
+        .msg { background: #1a1a1a; padding: 12px; border-radius: 4px; max-width: 80%; border-left: 4px solid #444; }
+        .msg.me { align-self: flex-end; border-left: none; border-right: 4px solid #2ecc71; }
+        .msg b { color: #2ecc71; font-size: 0.9em; display: block; margin-bottom: 5px; }
+        .del-btn { color: #e74c3c; font-size: 14px; cursor: pointer; float: right; }
 
-        /* Messages */
-        #chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-        .msg { background: #1e1e1e; padding: 10px; border-radius: 10px; max-width: 85%; border: 1px solid #333; position: relative; }
-        .msg.me { align-self: flex-end; border-color: #2ecc71; background: #1a2e22; }
-        .msg b { color: #2ecc71; font-size: 0.8em; display: block; margin-bottom: 3px; }
-        .del-btn { color: #e74c3c; font-size: 10px; cursor: pointer; float: right; font-weight: bold; }
-        .img-attachment { max-width: 100%; border-radius: 5px; margin-top: 5px; }
+        /* Input Area */
+        .bottom-bar { background: #000; padding: 20px; display: flex; gap: 10px; align-items: center; border-top: 3px solid #1a1a1a; }
+        .input-wrap { flex: 1; background: #1a1a1a; border: 2px solid #333; border-radius: 4px; display: flex; align-items: center; padding: 2px 10px; }
+        input[type="text"] { flex: 1; background: transparent; border: none; color: white; padding: 10px; font-size: 16px; outline: none; font-family: inherit; }
+        
+        .send-btn { background: #006400; color: white; border: 2px solid #004d00; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .exit-link { color: #444; font-size: 10px; text-decoration: none; margin-left: 5px; }
 
-        /* Input */
-        .input-area { background: #1e1e1e; padding: 15px; display: flex; gap: 10px; border-top: 1px solid #333; }
-        input[type="text"] { flex: 1; padding: 12px; border-radius: 6px; border: 1px solid #444; background: #2b2b2b; color: white; }
-        .icon-btn { background: #34495e; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; }
+        /* Modal */
+        #settings-modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#111; padding:25px; border:2px solid #2ecc71; z-index:1000; text-align: center; }
     </style>
 </head>
 <body>
 
-<div class="chat-header">
-    <div class="room-info" id="room-display">Public Room</div>
-    <div class="header-btns">
-        <button class="exit-btn" style="background:#9b59b6" onclick="toggleSettings()">⚙️</button>
-        <button class="exit-btn" style="background:#3498db" onclick="setupPrivateRoom()">Private</button>
-        <a href="index.html" class="exit-btn">Exit</a>
+<div class="main-container">
+    <div class="chat-section">
+        <div class="chat-header">
+            <span style="font-size: 35px; cursor: pointer; color: #555;" onclick="toggleSettings()">✱</span>
+            <h1 id="room-display">Global Chat</h1>
+            <a href="index.html" class="exit-link">EXIT</a>
+        </div>
+
+        <div id="chat-box"></div>
+
+        <div class="bottom-bar">
+            <span style="font-size: 28px; cursor: pointer; color: #2ecc71;" onclick="setupPrivateRoom()">✚</span>
+            <span style="font-size: 28px; cursor: pointer; color: #3498db; margin-left: 10px;" onclick="document.getElementById('fileInput').click()">🌀</span>
+            <input type="file" id="fileInput" style="display:none" onchange="sendFile()">
+            
+            <div class="input-wrap">
+                <input type="text" id="msgInput" placeholder="Message...">
+            </div>
+            
+            <button class="send-btn" onclick="sendMsg()">Send</button>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <h2>Private Chats</h2>
+        <div id="room-list">
+            </div>
+        <button onclick="switchRoom('public')" style="margin-top: 15px; background: #333; color: white; border: none; padding: 5px 10px; cursor: pointer; font-size: 10px;">Return to Global</button>
     </div>
 </div>
 
 <div id="settings-modal">
-    <h3>Chat Settings</h3>
-    <label><input type="checkbox" id="save-local" onchange="updateSaveSetting()"> Save/Download Chat History</label><br><br>
-    <button class="exit-btn" onclick="toggleSettings()">Close</button>
-</div>
-
-<div id="chat-box"></div>
-
-<div class="input-area">
-    <input type="file" id="fileInput" style="display:none" onchange="sendFile()">
-    <button class="icon-btn" onclick="document.getElementById('fileInput').click()">📎</button>
-    <input type="text" id="msgInput" placeholder="Type a message...">
-    <button class="icon-btn" style="background:#2ecc71" onclick="sendMsg()">Send</button>
+    <h3>System Configuration</h3>
+    <label style="font-size: 12px;"><input type="checkbox" id="save-local" onchange="updateSaveSetting()"> LOCAL CACHE (Bypass 5m Delete)</label><br><br>
+    <button class="send-btn" onclick="toggleSettings()">CLOSE</button>
 </div>
 
 <script type="module">
@@ -78,8 +102,8 @@
     const isAdmin = (currentUser === "MasterAdmin");
     let currentRoom = "public";
     let allowedUsers = [];
+    let knownRooms = JSON.parse(localStorage.getItem('knownRooms') || "[]");
 
-    // --- SETTINGS ---
     window.toggleSettings = () => {
         const modal = document.getElementById('settings-modal');
         modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
@@ -89,42 +113,50 @@
         localStorage.setItem('downloadChat', document.getElementById('save-local').checked);
     };
 
-    // --- PRIVATE ROOMS ---
+    // --- ROOM MANAGEMENT ---
     window.setupPrivateRoom = () => {
-        const room = prompt("Room Name:");
+        const room = prompt("Enter Room Name:");
         const users = prompt("Allowed Users (comma separated):");
         if (room && users) {
-            currentRoom = room;
-            allowedUsers = users.split(',').map(u => u.trim());
-            document.getElementById('room-display').innerText = "🔒 " + room;
-            listenForMessages();
+            const list = users.split(',').map(u => u.trim());
+            const newRoom = { name: room, users: list };
+            knownRooms.push(newRoom);
+            localStorage.setItem('knownRooms', JSON.stringify(knownRooms));
+            renderRoomList();
+            switchRoom(room, list);
         }
     };
+
+    window.switchRoom = (roomName, userList = []) => {
+        currentRoom = roomName;
+        allowedUsers = userList;
+        document.getElementById('room-display').innerText = roomName === 'public' ? "Global Chat" : roomName;
+        listenForMessages();
+    };
+
+    function renderRoomList() {
+        const listDiv = document.getElementById('room-list');
+        listDiv.innerHTML = "";
+        knownRooms.forEach(room => {
+            const div = document.createElement('div');
+            div.className = "room-card";
+            div.innerHTML = `<h4>${room.name}</h4><button class="open-btn" onclick="switchRoom('${room.name}', ${JSON.stringify(room.users)})">OPEN</button>`;
+            listDiv.appendChild(div);
+        });
+    }
 
     // --- MESSAGING ---
     window.sendMsg = async () => {
         const text = document.getElementById('msgInput').value.trim();
         if (!text) return;
-        await addDoc(collection(db, "messages"), {
-            text, user: currentUser, room: currentRoom, allowed: allowedUsers, createdAt: serverTimestamp()
-        });
+        await addDoc(collection(db, "messages"), { text, user: currentUser, room: currentRoom, allowed: allowedUsers, createdAt: serverTimestamp() });
         document.getElementById('msgInput').value = "";
     };
 
-    window.sendFile = async () => {
-        const file = document.getElementById('fileInput').files[0];
-        if (!file) return;
-        const fileRef = ref(storage, `chat/${Date.now()}_${file.name}`);
-        await uploadBytes(fileRef, file);
-        const url = await getDownloadURL(fileRef);
-        await addDoc(collection(db, "messages"), { text: "", img: url, user: currentUser, room: currentRoom, allowed: allowedUsers, createdAt: serverTimestamp() });
-    };
-
     window.deleteMsg = async (id) => {
-        if (confirm("Delete permanently?")) await deleteDoc(doc(db, "messages", id));
+        if (confirm("Delete from server?")) await deleteDoc(doc(db, "messages", id));
     };
 
-    // --- CORE LISTENER & AUTO-DELETE ---
     let unsubscribe;
     function listenForMessages() {
         if (unsubscribe) unsubscribe();
@@ -141,23 +173,18 @@
                 const msgTime = data.createdAt ? data.createdAt.toDate().getTime() : now;
                 const isOld = (now - msgTime) > fiveMinutes;
 
-                // 1. Check Permissions
-                const canSee = (data.room === "public") || (data.allowed.includes(currentUser)) || isAdmin;
+                // Visibility logic
+                const canSee = (data.room === currentRoom) || isAdmin;
                 
-                // 2. Handle Auto-Delete Logic
                 if (canSee) {
-                    if (isOld && !shouldDownload) return; // Skip if old and not downloading
-
+                    if (isOld && !shouldDownload) return;
                     const div = document.createElement('div');
                     div.className = `msg ${data.user === currentUser ? 'me' : ''}`;
-                    
-                    // Admin or Owner can delete
                     const canDelete = (data.user === currentUser || isAdmin);
-                    const delBtn = canDelete ? `<span class="del-btn" onclick="deleteMsg('${d.id}')">X</span>` : "";
-                    
+                    const delHtml = canDelete ? `<span class="del-btn" onclick="deleteMsg('${d.id}')">×</span>` : "";
                     div.innerHTML = `<b>${data.user} ${delHtml}</b>`;
                     if (data.text) div.innerHTML += `<span>${data.text}</span>`;
-                    if (data.img) div.innerHTML += `<img src="${data.img}" class="img-attachment">`;
+                    if (data.img) div.innerHTML += `<img src="${data.img}" style="max-width:100%; margin-top:5px; border-radius:2px;">`;
                     box.appendChild(div);
                 }
             });
@@ -165,6 +192,7 @@
         });
     }
 
+    renderRoomList();
     listenForMessages();
 </script>
 </body>
