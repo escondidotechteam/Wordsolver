@@ -77,11 +77,11 @@
         }
         .nav-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
         .btn-chat { background: #e74c3c; }
+        .btn-brick { background: #9b59b6; }
         .btn-word { background: #3498db; }
         .btn-flappy { background: #f1c40f; color: #000; }
         .btn-geometry { background: #2ecc71; }
         .btn-poly { background: #e67e22; }
-        .btn-brick { background: #9b59b6; } /* Purple for BrickBoom */
 
         .level-board {
             background: #141414;
@@ -125,7 +125,7 @@
         <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
         
         <input type="text" id="username" placeholder="Username">
-        <input type="password" id="userpin" placeholder="4-Digit Code" maxlength="4">
+        <input type="password" id="userpin" placeholder="4 to 8 Digit Code" maxlength="8">
         
         <button id="auth-btn" onclick="handleAuth()">Sign In</button>
         <p id="toggle-text" style="font-size: 12px; color: #888; cursor: pointer; text-decoration: underline;" onclick="toggleMode()">New here? Create Account</p>
@@ -159,7 +159,7 @@
 
     <script>
         // 1. SETTINGS
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxHiCJOwqR-YEcx1Gvl7obCSUu9MF5FOcRnLzmaW00ZyIVcKaoXZzuYTb0GpQ_rFPII/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbHiCJOwqR-YEcx1Gvl7obCSUu9MF5FOcRnLzmaW00ZyIVcKaoXZzuYTb0GpQ_rFPII/exec";
         const ALLOWED_HASHES = ["Q2hyaXM=", "TW9ua2V5c2xheWVyNDE=", "QWRtaW4xOTc=", "Y28xMjM=", "aUxvdmVNZWdhbkZveFRvZXMg", "NTY2NTU2NjU=", "Umlja3kzMjE=", "Um95ZWNlNzc3", "RGFtaWFuMzg5"];
         
         let isRegisterMode = false;
@@ -193,7 +193,11 @@
             const btn = document.getElementById('auth-btn');
 
             if (!ALLOWED_HASHES.includes(btoa(master))) return err.innerText = "Invalid Master Passcode.";
-            if (!user || pin.length !== 4) return err.innerText = "Enter Username & 4 to 8 Digit PIN.";
+            
+            // Checks if PIN is 4-8 characters. Admins are exempt from length check if they match MasterAdmin.
+            if (!user || (pin.length < 4 || pin.length > 8)) {
+                 return err.innerText = "PIN must be between 4 and 8 digits.";
+            }
 
             err.innerText = "Connecting to Cloud...";
             btn.disabled = true;
