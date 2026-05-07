@@ -193,7 +193,7 @@
             const btn = document.getElementById('auth-btn');
 
             if (!ALLOWED_HASHES.includes(btoa(master))) return err.innerText = "Invalid Master Passcode.";
-            if (!user || pin.length !== 4) return err.innerText = "Enter Username & 4-Digit PIN.";
+            if (!user || pin.length !== 4) return err.innerText = "Enter Username & 4 to 8 Digit PIN.";
 
             err.innerText = "Connecting to Cloud...";
             btn.disabled = true;
