@@ -2,44 +2,64 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    </title>Live Chat - Debug Mode</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcade Live Chat - Pro</title>
     <style>
-        body { background: #121212; color: white; font-family: sans-serif; margin: 0; padding: 20px; }
-        #debug-log { background: #000; color: #0f0; padding: 10px; font-family: monospace; font-size: 12px; border: 1px solid #333; height: 100px; overflow-y: auto; margin-bottom: 10px; }
-        #chat-box { height: 300px; border: 1px solid #444; overflow-y: auto; margin-bottom: 10px; padding: 10px; }
-        .input-area { display: flex; gap: 5px; }
-        input { flex: 1; padding: 10px; background: #222; color: #fff; border: 1px solid #444; }
+        body { background: #121212; color: white; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; margin: 0; }
+        
+        /* Header */
+        .chat-header { background: #1e1e1e; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
+        .header-btns { display: flex; gap: 8px; }
+        .exit-btn { background: #e74c3c; padding: 8px 12px; border-radius: 5px; text-decoration: none; color: white; font-weight: bold; font-size: 12px; border:none; cursor:pointer; }
+        .room-info { font-size: 14px; color: #2ecc71; font-weight: bold; }
+
+        /* Settings Modal */
+        #settings-modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#222; padding:20px; border-radius:10px; border:1px solid #2ecc71; z-index:100; }
+
+        /* Messages */
+        #chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .msg { background: #1e1e1e; padding: 10px; border-radius: 10px; max-width: 85%; border: 1px solid #333; position: relative; }
+        .msg.me { align-self: flex-end; border-color: #2ecc71; background: #1a2e22; }
+        .msg b { color: #2ecc71; font-size: 0.8em; display: block; margin-bottom: 3px; }
+        .del-btn { color: #e74c3c; font-size: 10px; cursor: pointer; float: right; font-weight: bold; }
+        .img-attachment { max-width: 100%; border-radius: 5px; margin-top: 5px; }
+
+        /* Input */
+        .input-area { background: #1e1e1e; padding: 15px; display: flex; gap: 10px; border-top: 1px solid #333; }
+        input[type="text"] { flex: 1; padding: 12px; border-radius: 6px; border: 1px solid #444; background: #2b2b2b; color: white; }
+        .icon-btn { background: #34495e; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <h3>Chat Debugger</h3>
-    <div id="debug-log">System: Waiting for initialization...</div>
-    
-    <div id="chat-box"></div>
-
-    <div class="input-area">
-        <input type="text" id="msgInput" placeholder="Type here...">
-        <button id="sendBtn" style="padding:10px; background:#2ecc71; border:none; color:white;">Send</button>
+<div class="chat-header">
+    <div class="room-info" id="room-display">Public Room</div>
+    <div class="header-btns">
+        <button class="exit-btn" style="background:#9b59b6" onclick="toggleSettings()">⚙️</button>
+        <button class="exit-btn" style="background:#3498db" onclick="setupPrivateRoom()">Private</button>
+        <a href="index.html" class="exit-btn">Exit</a>
     </div>
+</div>
+
+<div id="settings-modal">
+    <h3>Chat Settings</h3>
+    <label><input type="checkbox" id="save-local" onchange="updateSaveSetting()"> Save/Download Chat History</label><br><br>
+    <button class="exit-btn" onclick="toggleSettings()">Close</button>
+</div>
+
+<div id="chat-box"></div>
+
+<div class="input-area">
+    <input type="file" id="fileInput" style="display:none" onchange="sendFile()">
+    <button class="icon-btn" onclick="document.getElementById('fileInput').click()">📎</button>
+    <input type="text" id="msgInput" placeholder="Type a message...">
+    <button class="icon-btn" style="background:#2ecc71" onclick="sendMsg()">Send</button>
+</div>
 
 <script type="module">
-    // --- DEBUGGER FUNCTION ---
-    function log(msg) {
-        const d = document.getElementById('debug-log');
-        d.innerHTML += "<br>> " + msg;
-        d.scrollTop = d.scrollHeight;
-    }
-
-    // Capture errors and show them as iPad Alerts
-    window.onerror = function(m, s, l) {
-        alert("CRASH AT LINE " + l + ": " + m);
-    };
-
-    log("Starting Firebase...");
-
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDhYmRfVmyM011-6dFsjalCFVGoYmIL-z4",
@@ -47,52 +67,105 @@
         projectId: "privatearcadechat",
         storageBucket: "privatearcadechat.firebasestorage.app",
         messagingSenderId: "762409625215",
-        appId: "1:762409625215:web:2f33f867309474f812c14a",
-        measurementId: "G-EVPTTME7FD"
+        appId: "1:762409625215:web:2f33f867309474f812c14a"
     };
 
-    try {
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        log("Firebase Initialized.");
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
 
+    const currentUser = localStorage.getItem('username') || "Guest";
+    const isAdmin = (currentUser === "MasterAdmin");
+    let currentRoom = "public";
+    let allowedUsers = [];
+
+    // --- SETTINGS ---
+    window.toggleSettings = () => {
+        const modal = document.getElementById('settings-modal');
+        modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+    };
+
+    window.updateSaveSetting = () => {
+        localStorage.setItem('downloadChat', document.getElementById('save-local').checked);
+    };
+
+    // --- PRIVATE ROOMS ---
+    window.setupPrivateRoom = () => {
+        const room = prompt("Room Name:");
+        const users = prompt("Allowed Users (comma separated):");
+        if (room && users) {
+            currentRoom = room;
+            allowedUsers = users.split(',').map(u => u.trim());
+            document.getElementById('room-display').innerText = "🔒 " + room;
+            listenForMessages();
+        }
+    };
+
+    // --- MESSAGING ---
+    window.sendMsg = async () => {
+        const text = document.getElementById('msgInput').value.trim();
+        if (!text) return;
+        await addDoc(collection(db, "messages"), {
+            text, user: currentUser, room: currentRoom, allowed: allowedUsers, createdAt: serverTimestamp()
+        });
+        document.getElementById('msgInput').value = "";
+    };
+
+    window.sendFile = async () => {
+        const file = document.getElementById('fileInput').files[0];
+        if (!file) return;
+        const fileRef = ref(storage, `chat/${Date.now()}_${file.name}`);
+        await uploadBytes(fileRef, file);
+        const url = await getDownloadURL(fileRef);
+        await addDoc(collection(db, "messages"), { text: "", img: url, user: currentUser, room: currentRoom, allowed: allowedUsers, createdAt: serverTimestamp() });
+    };
+
+    window.deleteMsg = async (id) => {
+        if (confirm("Delete permanently?")) await deleteDoc(doc(db, "messages", id));
+    };
+
+    // --- CORE LISTENER & AUTO-DELETE ---
+    let unsubscribe;
+    function listenForMessages() {
+        if (unsubscribe) unsubscribe();
         const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
-        
-        log("Connecting to Firestore...");
-        onSnapshot(q, (snapshot) => {
-            log("Connection Successful! " + snapshot.size + " messages found.");
+        unsubscribe = onSnapshot(q, (snapshot) => {
             const box = document.getElementById('chat-box');
             box.innerHTML = "";
-            snapshot.forEach(doc => {
-                const p = document.createElement('p');
-                p.textContent = doc.data().user + ": " + doc.data().text;
-                box.appendChild(p);
+            const now = Date.now();
+            const fiveMinutes = 5 * 60 * 1000;
+            const shouldDownload = localStorage.getItem('downloadChat') === 'true';
+
+            snapshot.forEach(d => {
+                const data = d.data();
+                const msgTime = data.createdAt ? data.createdAt.toDate().getTime() : now;
+                const isOld = (now - msgTime) > fiveMinutes;
+
+                // 1. Check Permissions
+                const canSee = (data.room === "public") || (data.allowed.includes(currentUser)) || isAdmin;
+                
+                // 2. Handle Auto-Delete Logic
+                if (canSee) {
+                    if (isOld && !shouldDownload) return; // Skip if old and not downloading
+
+                    const div = document.createElement('div');
+                    div.className = `msg ${data.user === currentUser ? 'me' : ''}`;
+                    
+                    // Admin or Owner can delete
+                    const canDelete = (data.user === currentUser || isAdmin);
+                    const delBtn = canDelete ? `<span class="del-btn" onclick="deleteMsg('${d.id}')">X</span>` : "";
+                    
+                    div.innerHTML = `<b>${data.user} ${delHtml}</b>`;
+                    if (data.text) div.innerHTML += `<span>${data.text}</span>`;
+                    if (data.img) div.innerHTML += `<img src="${data.img}" class="img-attachment">`;
+                    box.appendChild(div);
+                }
             });
-        }, (error) => {
-            log("FIRESTORE ERROR: " + error.message);
-            alert("Firestore Error: " + error.message);
+            box.scrollTop = box.scrollHeight;
         });
-
-        document.getElementById('sendBtn').onclick = async () => {
-            const val = document.getElementById('msgInput').value;
-            log("Attempting to send...");
-            try {
-                await addDoc(collection(db, "messages"), {
-                    text: val,
-                    user: localStorage.getItem('username') || "TestUser",
-                    createdAt: serverTimestamp()
-                });
-                log("Message sent!");
-                document.getElementById('msgInput').value = "";
-            } catch(e) {
-                log("SEND ERROR: " + e.message);
-            }
-        };
-
-    } catch (e) {
-        log("INIT ERROR: " + e.message);
-        alert("Init Error: " + e.message);
     }
+
+    listenForMessages();
 </script>
 </body>
 </html>
