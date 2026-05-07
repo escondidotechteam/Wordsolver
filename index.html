@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Private Menu</title>
+    <title>Private Arcade Hub</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -55,6 +55,7 @@
             margin-bottom: 10px;
         }
         button:hover { background: #27ae60; }
+        button:disabled { background: #444; cursor: not-allowed; }
         .hidden { display: none !important; }
         
         .menu-grid {
@@ -75,12 +76,11 @@
             transition: transform 0.2s, filter 0.2s;
         }
         .nav-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
-        .btn-chat { background: #e74c3c; } /* Red for Chat */
+        .btn-chat { background: #e74c3c; }
         .btn-word { background: #3498db; }
         .btn-flappy { background: #f1c40f; color: #000; }
         .btn-geometry { background: #2ecc71; }
         .btn-poly { background: #e67e22; }
-        .btn-feedback { background: #9b59b6; }
 
         .level-board {
             background: #141414;
@@ -119,34 +119,36 @@
     </div>
 
     <div id="gate-area" class="box">
-        <h2>System Verification</h2>
-        <p style="color: #888; font-size: 14px;">Enter authorization passcode to proceed.</p>
-        <input type="password" id="passcode" placeholder="Passcode">
-        <button onclick="checkAccess()">Unlock Menu</button>
+        <h2 id="gate-title">System Verification</h2>
+        <input type="password" id="master-pass" placeholder="Master Passcode">
+        <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
+        
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="userpin" placeholder="4-Digit Code" maxlength="4">
+        
+        <button id="auth-btn" onclick="handleAuth()">Sign In</button>
+        <p id="toggle-text" style="font-size: 12px; color: #888; cursor: pointer; text-decoration: underline;" onclick="toggleMode()">New here? Create Account</p>
         <p id="err" style="color: #e74c3c; font-size: 14px; margin-top: 10px;"></p>
     </div>
 
     <div id="menu-area" class="box hidden">
-        <h2>Main Menu Hub</h2>
+        <h2 id="welcome-msg">Main Menu Hub</h2>
         <div class="menu-grid">
             <a href="chat.html" class="nav-btn btn-chat">Live Community Chat</a>
             <a href="solver.html" class="nav-btn btn-word">Word Search Solver</a>
             <a href="flappy.html" class="nav-btn btn-flappy">Floppy Bird</a>
             <a href="geometry.html" class="nav-btn btn-geometry">Geometry Sprint</a>
             <a href="polytrack/index.html" class="nav-btn btn-poly">Polytrack (404)</a>
-            <a href="https://docs.google.com/forms/d/e/1FAIpQLSdIH6cs6SyBgyQaF0DRpZiJcPH3KWtHBoELod8m97_mE521Qw/viewform" target="_blank" class="nav-btn btn-feedback">Bugs & Suggestions</a>
         </div>
 
         <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
 
-        <h3>Community Geometry Levels</h3>
-        <div class="level-board" id="levels-container">
-            <p style="color:#666; font-size: 13px; text-align: center;">Loading levels...</p>
-        </div>
+        <h3>Community Levels</h3>
+        <div class="level-board" id="levels-container"></div>
 
         <h3>Post Your Level</h3>
         <input type="text" id="lvl-title" placeholder="Level Title">
-        <textarea id="lvl-data" placeholder="Paste your level string here..."></textarea>
+        <textarea id="lvl-data" placeholder="Paste level string..."></textarea>
         <button style="background-color: #9b59b6;" onclick="postLevel()">Share Level</button>
         <p id="share-status" style="font-size:12px; color:#aaa;"></p>
         
@@ -154,53 +156,93 @@
     </div>
 
     <script>
-        // --- 1. IPAD FILTER ---
-        const ua = navigator.userAgent;
-        const isIPad = /iPad|Macintosh/.test(ua) && 'ontouchend' in document;
+        // 1. SETTINGS
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx-8KZlTe4F_SR1XqVgtKyAHKiX5McvmWZQ7HgbflZBRE5YZlLY8ntgSikTJ_XLNy-IKQ/exec";
+        const ALLOWED_HASHES = ["Q2hyaXM=", "TW9ua2V5c2xheWVyNDE=", "QWRtaW4xOTc=", "Y28xMjM=", "aUxvdmVNZWdhbkZveFRvZXMg", "NTY2NTU2NjU=", "Umlja3kzMjE=", "Um95ZWNlNzc3", "RGFtaWFuMzg5"];
+        
+        let isRegisterMode = false;
+
+        // 2. DEVICE FILTER (iPad Only)
+        const isIPad = /iPad|Macintosh/.test(navigator.userAgent) && 'ontouchend' in document;
         if (!isIPad) {
             document.body.innerHTML = document.getElementById('device-error').innerHTML;
             document.body.style.backgroundColor = "#fff";
             document.body.style.color = "#000";
-            document.body.style.textAlign = "left";
-            document.body.style.padding = "20px";
             window.stop(); 
         }
 
-        // --- 2. PASSCODES ---
-        const ALLOWED_HASHES = ["Q2hyaXM=", "TW9ua2V5c2xheWVyNDE=", "QWRtaW4xOTc=", "Y28xMjM=", "aUxvdmVNZWdhbkZveFRvZXMg", "NTY2NTU2NjU=", "Umlja3kzMjE=", "Um95ZWNlNzc3", "RGFtaWFuMzg5"]; 
-
+        // 3. AUTH LOGIC
         window.onload = function() {
             if (localStorage.getItem('isAuthorized') === 'true') { showMenu(); }
         };
 
-        function checkAccess() {
-            const pin = document.getElementById('passcode').value;
-            if (ALLOWED_HASHES.includes(btoa(pin))) {
-                localStorage.setItem('isAuthorized', 'true');
-                // Sets the passcode as the chat name
-                localStorage.setItem('username', pin); 
-                showMenu();
-            } else {
-                document.getElementById('err').innerText = "Access Denied.";
+        function toggleMode() {
+            isRegisterMode = !isRegisterMode;
+            document.getElementById('gate-title').innerText = isRegisterMode ? "Create Account" : "System Verification";
+            document.getElementById('auth-btn').innerText = isRegisterMode ? "Register & Enter" : "Sign In";
+            document.getElementById('toggle-text').innerText = isRegisterMode ? "Already have an account? Sign In" : "New here? Create Account";
+        }
+
+        async function handleAuth() {
+            const master = document.getElementById('master-pass').value;
+            const user = document.getElementById('username').value.trim();
+            const pin = document.getElementById('userpin').value.trim();
+            const err = document.getElementById('err');
+            const btn = document.getElementById('auth-btn');
+
+            if (!ALLOWED_HASHES.includes(btoa(master))) return err.innerText = "Invalid Master Passcode.";
+            if (!user || pin.length !== 4) return err.innerText = "Enter Username & 4-Digit PIN.";
+
+            err.innerText = "Connecting to Cloud...";
+            btn.disabled = true;
+
+            const payload = {
+                type: isRegisterMode ? "register" : "login",
+                username: user,
+                pin: pin
+            };
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                });
+                const res = await response.json();
+
+                if (res.status === "success") {
+                    localStorage.setItem('isAuthorized', 'true');
+                    localStorage.setItem('username', user);
+                    showMenu();
+                } else if (res.status === "exists") {
+                    err.innerText = "Username already taken.";
+                    btn.disabled = false;
+                } else {
+                    err.innerText = "Invalid Username or PIN.";
+                    btn.disabled = false;
+                }
+            } catch (e) {
+                err.innerText = "Cloud Error. Try again.";
+                btn.disabled = false;
             }
         }
 
         function showMenu() {
             document.getElementById('gate-area').classList.add('hidden');
             document.getElementById('menu-area').classList.remove('hidden');
+            document.getElementById('welcome-msg').innerText = "Welcome, " + localStorage.getItem('username');
             loadLevels();
         }
 
         function logout() {
             localStorage.removeItem('isAuthorized');
+            localStorage.removeItem('username');
             location.reload();
         }
 
-        // --- 3. GOOGLE SCRIPT ---
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzOsLPjHk6XRKI3qWWHyRQqXFbsK2C1brTL96i6rOrnPy2W_wreJg4AfJPjfoNjC7a4VQ/exec"; 
-
+        // 4. LEVEL SHARING
         function loadLevels() {
             const container = document.getElementById('levels-container');
+            container.innerHTML = "Fetching...";
             fetch(SCRIPT_URL)
                 .then(res => res.json())
                 .then(levels => {
@@ -224,7 +266,7 @@
             status.innerText = "Sharing...";
             fetch(SCRIPT_URL, {
                 method: "POST",
-                body: JSON.stringify({ title, data }),
+                body: JSON.stringify({ type: "level", title, data }),
                 headers: { "Content-Type": "text/plain;charset=utf-8" },
                 redirect: "follow"
             }).then(() => {
