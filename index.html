@@ -81,6 +81,7 @@
         .btn-flappy { background: #f1c40f; color: #000; }
         .btn-geometry { background: #2ecc71; }
         .btn-poly { background: #e67e22; }
+        .btn-brick { background: #9b59b6; } /* Purple for BrickBoom */
 
         .level-board {
             background: #141414;
@@ -135,6 +136,7 @@
         <h2 id="welcome-msg">Main Menu Hub</h2>
         <div class="menu-grid">
             <a href="chat.html" class="nav-btn btn-chat">Live Community Chat</a>
+            <a href="brickboom.html" class="nav-btn btn-brick">BrickBoom</a>
             <a href="solver.html" class="nav-btn btn-word">Word Search Solver</a>
             <a href="flappy.html" class="nav-btn btn-flappy">Floppy Bird</a>
             <a href="geometry.html" class="nav-btn btn-geometry">Geometry Sprint</a>
@@ -149,7 +151,7 @@
         <h3>Post Your Level</h3>
         <input type="text" id="lvl-title" placeholder="Level Title">
         <textarea id="lvl-data" placeholder="Paste level string..."></textarea>
-        <button style="background-color: #9b59b6;" onclick="postLevel()">Share Level</button>
+        <button style="background-color: #2ecc71;" onclick="postLevel()">Share Level</button>
         <p id="share-status" style="font-size:12px; color:#aaa;"></p>
         
         <p style="margin-top: 25px;"><a href="#" onclick="logout()" style="color: #e74c3c; font-size: 13px; text-decoration: none;">Log out</a></p>
