@@ -163,7 +163,7 @@
         const ALLOWED_HASHES = ["Q2hyaXM=", "TW9ua2V5c2xheWVyNDE=", "QWRtaW4xOTc=", "Y28xMjM=", "aUxvdmVNZWdhbkZveFRvZXMg", "NTY2NTU2NjU=", "Umlja3kzMjE=", "Um95ZWNlNzc3", "RGFtaWFuMzg5"];
         
         let isRegisterMode = false;
-
+/*
         // 2. DEVICE FILTER (iPad Only)
         const isIPad = /iPad|Macintosh/.test(navigator.userAgent) && 'ontouchend' in document;
         if (!isIPad) {
@@ -172,7 +172,7 @@
             document.body.style.color = "#000";
             window.stop(); 
         }
-
+*/
         // 3. AUTH LOGIC
         window.onload = function() {
             if (localStorage.getItem('isAuthorized') === 'true') { showMenu(); }
