@@ -75,6 +75,48 @@
             font-size: 16px;
             transition: transform 0.2s, filter 0.2s;
         }
+        /* Ad Layout Styling */
+.menu-ad-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px 0;
+    z-index: 10;
+}
+
+.ad-label {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    color: #555;
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+}
+
+/* Placeholder box until AdSense fills it */
+.ad-placeholder-banner {
+    width: 90vw;
+    max-width: 728px;
+    height: 90px;
+    background: #1a1a1a;
+    border: 1px dashed #333;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #444;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Ensure the main menu elements stay centered below the ad */
+.main-menu-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+}
         .nav-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
         .btn-chat { background: #e74c3c; }
         .btn-brick { background: #9b59b6; }
@@ -132,6 +174,22 @@
         <p id="toggle-text" style="font-size: 12px; color: #888; cursor: pointer; text-decoration: underline;" onclick="toggleMode()">New here? Create Account</p>
         <p id="err" style="color: #e74c3c; font-size: 14px; margin-top: 10px;"></p>
     </div>
+    
+    <div class="menu-ad-container top-leaderboard">
+    <span class="ad-label">ADVERTISEMENT</span>
+    <div class="ad-placeholder-banner">
+        Responsive Display Ad (Leaderboard)
+    </div>
+</div>
+
+<div class="main-menu-wrapper">
+    <h1 class="logo">ARCADE HUB</h1>
+    
+    <div class="menu-buttons">
+        <a href="chat.html" class="menu-btn">GLOBAL CHAT</a>
+        <a href="brickboom.html" class="menu-btn gold">BRICK BOOM (NEW!)</a>
+    </div>
+</div>
 
     <div id="menu-area" class="box hidden">
         <h2 id="welcome-msg">Main Menu Hub</h2>
