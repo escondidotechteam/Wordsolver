@@ -1,72 +1,387 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Block Blast Puzzle</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Brick Boom</title>
     <style>
-        canvas { border: 2px solid #333; background: #eee; cursor: pointer; }
-        body { display: flex; flex-direction: column; align-items: center; font-family: sans-serif; }
+        body {
+            background: #121212;
+            color: white;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* Top HUD */
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            width: 90vw;
+            max-width: 400px;
+            margin-bottom: 10px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        #score { color: #2ecc71; }
+        #combo { color: #f1c40f; }
+
+        /* Game Board */
+        #board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            gap: 2px;
+            background: #1e1e1e;
+            padding: 4px;
+            border-radius: 8px;
+            border: 4px solid #333;
+            width: 90vw;
+            height: 90vw;
+            max-width: 400px;
+            max-height: 400px;
+            box-sizing: border-box;
+        }
+        .cell {
+            background: #2b2b2b;
+            border-radius: 4px;
+            transition: background 0.1s;
+        }
+        .cell.filled { border: 1px solid rgba(255,255,255,0.1); }
+
+        /* Pieces Deck */
+        #deck {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 90vw;
+            max-width: 400px;
+            height: 100px;
+            margin-top: 20px;
+            background: #000;
+            border-radius: 8px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .deck-slot {
+            width: 80px;
+            height: 80px;
+            display: grid;
+            gap: 1px;
+            cursor: pointer;
+            border-radius: 4px;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        .deck-slot.selected {
+            background: #333;
+            outline: 2px solid #2ecc71;
+        }
+        .deck-slot.used {
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        /* Action Buttons */
+        .controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 20px;
+        }
+        .btn {
+            background: #a30000;
+            color: white;
+            border: 2px solid #730000;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .btn.exit { background: #333; border-color: #222; }
+
+        /* Piece colors */
+        .c-1 { background: #e74c3c; } /* Red */
+        .c-2 { background: #3498db; } /* Blue */
+        .c-3 { background: #2ecc71; } /* Green */
+        .c-4 { background: #f1c40f; } /* Yellow */
+        .c-5 { background: #9b59b6; } /* Purple */
+        .c-6 { background: #e67e22; } /* Orange */
     </style>
 </head>
 <body>
-    <h1>Block Blast</h1>
-    <canvas id="gameCanvas" width="400" height="400"></canvas>
-    <p>Score: <span id="score">0</span></p>
 
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const gridSize = 8;
-        const cellSize = 50;
-        let score = 0;
+<div class="hud">
+    <div>SCORE: <span id="score">0</span></div>
+    <div>COMBO: <span id="combo">x0</span></div>
+</div>
 
-        // Initialize empty grid
-        let grid = Array(gridSize).fill().map(() => Array(gridSize).fill(0));
+<div id="board"></div>
 
-        function drawGrid() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (let r = 0; r < gridSize; r++) {
-                for (let c = 0; c < gridSize; c++) {
-                    ctx.strokeStyle = '#ccc';
-                    ctx.strokeRect(c * cellSize, r * cellSize, cellSize, cellSize);
-                    if (grid[r][c] === 1) {
-                        ctx.fillStyle = '#4CAF50';
-                        ctx.fillRect(c * cellSize + 2, r * cellSize + 2, cellSize - 4, cellSize - 4);
+<div id="deck">
+    <div class="deck-slot" id="slot-0" onclick="selectPiece(0)"></div>
+    <div class="deck-slot" id="slot-1" onclick="selectPiece(1)"></div>
+    <div class="deck-slot" id="slot-2" onclick="selectPiece(2)"></div>
+</div>
+
+<div class="controls">
+    <button class="btn" onclick="resetGame()">RESET</button>
+    <a href="index.html" class="btn exit">EXIT HUB</a>
+</div>
+
+<script>
+    const BOARD_SIZE = 8;
+    let grid = Array(BOARD_SIZE).fill().map(() => Array(BOARD_SIZE).fill(0));
+    let score = 0;
+    let comboMultiplier = 0;
+    let deckPieces = [null, null, null];
+    let selectedPieceIndex = null;
+
+    // Tetris/Block-Blast Shapes: [rows][cols] array representation
+    const SHAPES = [
+        { matrix: [[1]], color: 1 }, // 1x1 block
+        { matrix: [[1, 1]], color: 2 }, // 1x2 bar
+        { matrix: [[1, 1, 1]], color: 2 }, // 1x3 bar
+        { matrix: [[1], [1], [1]], color: 2 }, // 3x1 column
+        { matrix: [[1, 1], [1, 1]], color: 3 }, // 2x2 square
+        { matrix: [[1, 1, 1], [1, 1, 1], [1, 1, 1]], color: 3 }, // 3x3 giant square
+        { matrix: [[1, 0], [1, 1]], color: 4 }, // L-corner small
+        { matrix: [[1, 1, 1], [1, 0, 0]], color: 4 }, // L-shape normal
+        { matrix: [[0, 1], [1, 1]], color: 5 }, // Reverse corner
+        { matrix: [[1, 1, 0], [0, 1, 1]], color: 6 }, // Z-shape
+        { matrix: [[0, 1, 0], [1, 1, 1]], color: 5 }  // T-shape
+    ];
+
+    function initBoard() {
+        const boardEl = document.getElementById('board');
+        boardEl.innerHTML = '';
+        for (let r = 0; r < BOARD_SIZE; r++) {
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.id = `cell-${r}-${c}`;
+                cell.onclick = () => handleBoardClick(r, c);
+                boardEl.appendChild(cell);
+            }
+        }
+    }
+
+    function renderBoard() {
+        for (let r = 0; r < BOARD_SIZE; r++) {
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                const cell = document.getElementById(`cell-${r}-${c}`);
+                cell.className = 'cell';
+                if (grid[r][c] > 0) {
+                    cell.classList.add('filled', `c-${grid[r][c]}`);
+                }
+            }
+        }
+    }
+
+    function spawnDeck() {
+        for (let i = 0; i < 3; i++) {
+            const randomShape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+            deckPieces[i] = JSON.parse(JSON.stringify(randomShape)); // Deep copy
+            renderDeckSlot(i);
+        }
+        checkGameOver();
+    }
+
+    function renderDeckSlot(index) {
+        const slot = document.getElementById(`slot-${index}`);
+        slot.innerHTML = '';
+        slot.className = 'deck-slot';
+        
+        if (!deckPieces[index]) {
+            slot.classList.add('used');
+            return;
+        }
+
+        const piece = deckPieces[index];
+        const rLen = piece.matrix.length;
+        const cLen = piece.matrix[0].length;
+
+        slot.style.gridTemplateRows = `repeat(${rLen}, 1fr)`;
+        slot.style.gridTemplateColumns = `repeat(${cLen}, 1fr)`;
+
+        for (let r = 0; r < rLen; r++) {
+            for (let c = 0; c < cLen; c++) {
+                const block = document.createElement('div');
+                if (piece.matrix[r][c] === 1) {
+                    block.className = `c-${piece.color}`;
+                    block.style.borderRadius = '2px';
+                }
+                slot.appendChild(block);
+            }
+        }
+    }
+
+    function selectPiece(index) {
+        if (!deckPieces[index]) return;
+        
+        // Toggle selection
+        if (selectedPieceIndex === index) {
+            selectedPieceIndex = null;
+            document.getElementById(`slot-${index}`).classList.remove('selected');
+        } else {
+            if (selectedPieceIndex !== null) {
+                document.getElementById(`slot-${selectedPieceIndex}`).classList.remove('selected');
+            }
+            selectedPieceIndex = index;
+            document.getElementById(`slot-${index}`).classList.add('selected');
+        }
+    }
+
+    function handleBoardClick(row, col) {
+        if (selectedPieceIndex === null) return;
+        const piece = deckPieces[selectedPieceIndex];
+        
+        if (canPlacePiece(piece, row, col)) {
+            placePiece(piece, row, col);
+            deckPieces[selectedPieceIndex] = null;
+            renderDeckSlot(selectedPieceIndex);
+            selectedPieceIndex = null;
+            
+            // Check clearing rows & columns
+            checkLines();
+
+            // Check if deck is completely empty
+            if (deckPieces.every(p => p === null)) {
+                spawnDeck();
+            } else {
+                checkGameOver();
+            }
+        }
+    }
+
+    function canPlacePiece(piece, startRow, startCol) {
+        const matrix = piece.matrix;
+        for (let r = 0; r < matrix.length; r++) {
+            for (let c = 0; c < matrix[r].length; c++) {
+                if (matrix[r][c] === 1) {
+                    const targetRow = startRow + r;
+                    const targetCol = startCol + c;
+                    
+                    // Out of bounds checking
+                    if (targetRow >= BOARD_SIZE || targetCol >= BOARD_SIZE) return false;
+                    // Already occupied checking
+                    if (grid[targetRow][targetCol] !== 0) return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    function placePiece(piece, startRow, startCol) {
+        const matrix = piece.matrix;
+        let blocksPlaced = 0;
+        for (let r = 0; r < matrix.length; r++) {
+            for (let c = 0; c < matrix[r].length; c++) {
+                if (matrix[r][c] === 1) {
+                    grid[startRow + r][startCol + c] = piece.color;
+                    blocksPlaced++;
+                }
+            }
+        }
+        score += blocksPlaced;
+        document.getElementById('score').innerText = score;
+        renderBoard();
+    }
+
+    function checkLines() {
+        let rowsToClear = [];
+        let colsToClear = [];
+
+        // Check horizontal rows
+        for (let r = 0; r < BOARD_SIZE; r++) {
+            if (grid[r].every(cell => cell !== 0)) {
+                rowsToClear.push(r);
+            }
+        }
+
+        // Check vertical columns
+        for (let c = 0; c < BOARD_SIZE; c++) {
+            let colMatch = true;
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                if (grid[r][c] === 0) {
+                    colMatch = false;
+                    break;
+                }
+            }
+            if (colMatch) colsToClear.push(c);
+        }
+
+        const totalLines = rowsToClear.length + colsToClear.length;
+
+        if (totalLines > 0) {
+            comboMultiplier++;
+            // Scoring algorithm: 10 pts per line * lines count * combo value
+            score += (totalLines * 10) * comboMultiplier;
+            document.getElementById('score').innerText = score;
+            document.getElementById('combo').innerText = `x${comboMultiplier}`;
+
+            // Execute clears
+            rowsToClear.forEach(r => grid[r].fill(0));
+            colsToClear.forEach(c => {
+                for (let r = 0; r < BOARD_SIZE; r++) {
+                    grid[r][c] = 0;
+                }
+            });
+
+            // Smoothly render updates
+            setTimeout(() => {
+                renderBoard();
+            }, 150);
+        } else {
+            // Reset combo chain if turn resulted in no cleared lines
+            comboMultiplier = 0;
+            document.getElementById('combo').innerText = `x0`;
+        }
+    }
+
+    function checkGameOver() {
+        // Iterate through remaining pieces in the dock
+        for (let i = 0; i < 3; i++) {
+            const piece = deckPieces[i];
+            if (!piece) continue;
+
+            // Search every spot on the grid to see if it fits anywhere
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    if (canPlacePiece(piece, r, c)) {
+                        return; // A valid move exists! Break check loop.
                     }
                 }
             }
         }
+        
+        // If the loop finished without finding a match, game over!
+        alert(`GAME OVER!\nFinal Score: ${score}`);
+        resetGame();
+    }
 
-        // Logic to clear lines and update score
-        function checkLines() {
-            let linesCleared = 0;
-            // Check rows
-            for (let r = 0; r < gridSize; r++) {
-                if (grid[r].every(cell => cell === 1)) {
-                    grid[r].fill(0);
-                    linesCleared++;
-                }
-            }
-            // Add column checking and combo multiplier logic here
-            score += linesCleared * 100;
-            document.getElementById('score').innerText = score;
-            drawGrid();
-        }
+    function resetGame() {
+        grid = Array(BOARD_SIZE).fill().map(() => Array(BOARD_SIZE).fill(0));
+        score = 0;
+        comboMultiplier = 0;
+        selectedPieceIndex = null;
+        document.getElementById('score').innerText = '0';
+        document.getElementById('combo').innerText = 'x0';
+        initBoard();
+        spawnDeck();
+    }
 
-        // Handle simple click-to-place for demonstration
-        canvas.onclick = (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            const c = Math.floor(x / cellSize);
-            const r = Math.floor(y / cellSize);
-            
-            if (grid[r][c] === 0) {
-                grid[r][c] = 1; // Basic placement
-                checkLines();
-            }
-        };
-
-        drawGrid();
-    </script>
+    // Run Engine Setup
+    initBoard();
+    spawnDeck();
+</script>
 </body>
 </html>
