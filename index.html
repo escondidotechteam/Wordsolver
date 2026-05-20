@@ -30,7 +30,7 @@
         /* ---------------------------------- */
         .page-container {
             display: grid;
-            grid-template-columns: 160px 1fr 160px;
+            grid-template-columns: 160px 1fr 160px; /* Restricts side towers to hold strict sizes */
             gap: 20px;
             width: 100%;
             max-width: 1200px;
@@ -40,6 +40,7 @@
             align-items: start;
         }
 
+        /* Centers the dashboard box perfectly */
         .hub-center {
             display: flex;
             flex-direction: column;
@@ -61,6 +62,7 @@
             font-weight: 800;
         }
 
+        /* The Main Hub Panel Box */
         .menu-panel {
             background: var(--panel-bg);
             border: 1px solid var(--border-color);
@@ -79,6 +81,7 @@
             font-weight: 600;
         }
 
+        /* Button Configuration */
         .button-stack {
             display: flex;
             flex-direction: column;
@@ -105,7 +108,7 @@
         .menu-btn:active { transform: scale(0.98); }
         .menu-btn:hover { filter: brightness(1.1); }
 
-        /* Color Coding */
+        /* Button Palette Mapping */
         .btn-chat { background-color: #e74c3c; }
         .btn-brick { background-color: #9b59b6; }
         .btn-solver { background-color: #3498db; }
@@ -116,6 +119,7 @@
         .btn-play { background-color: #3498db; padding: 6px 12px; font-size: 14px; width: auto; display: inline-block;}
         .btn-share { background-color: #2ecc71; margin-top: 10px;}
         
+        /* Ko-fi Button Specific Design */
         .btn-kofi {
             background-color: #ff5e5b;
             display: flex;
@@ -123,7 +127,11 @@
             justify-content: center;
             gap: 10px;
         }
-        .kofi-cup { width: 20px; height: 20px; filter: brightness(0) invert(1); }
+        .kofi-cup {
+            width: 20px;
+            height: 20px;
+            filter: brightness(0) invert(1);
+        }
 
         /* Unblockable Smartlink Banner Styling for iPads */
         .btn-smartlink {
@@ -138,7 +146,7 @@
             100% { opacity: 0.9; }
         }
 
-        /* Layout Dividers */
+        /* Level Share Area Styles */
         .section-divider {
             border-top: 1px solid var(--border-color);
             margin: 20px 0;
@@ -170,19 +178,62 @@
         }
 
         .level-textarea { height: 60px; resize: none; }
-        .logout-btn { color: #c0392b; text-decoration: none; font-size: 13px; display: inline-block; margin-top: 15px; font-weight: bold; }
 
-        /* Ad Structural Boxes */
-        .ad-zone { display: flex; justify-content: center; align-items: center; box-sizing: border-box; }
-        .side-tower { width: 160px; min-height: 600px; position: sticky; top: 20px; }
+        .logout-btn {
+            color: #c0392b;
+            text-decoration: none;
+            font-size: 13px;
+            display: inline-block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        .logout-btn:hover { text-decoration: underline; }
+
+        /* ---------------------------------- */
+        /* ADSTERRA STRUCTURAL WRAPPERS       */
+        /* ---------------------------------- */
+        .ad-zone {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        /* Desktop side settings */
+        .side-tower {
+            width: 160px;
+            min-height: 600px;
+            position: sticky;
+            top: 20px;
+        }
+
+        /* Mobile banners default to hidden status on PC monitors */
         .top-tablet-banner { display: none; width: 100%; max-width: 468px; margin-bottom: 15px; }
         .bottom-mobile-banner { display: none; width: 100%; max-width: 320px; margin-top: 20px; }
 
+        /* ---------------------------------- */
+        /* MOBILE & IPAD RESPONSIVE QUERY CODE*/
+        /* ---------------------------------- */
         @media (max-width: 850px) {
-            .page-container { grid-template-columns: 1fr; padding: 10px; gap: 5px; min-height: auto; }
-            .side-tower { display: none !important; }
-            .top-tablet-banner { display: flex; }
-            .bottom-mobile-banner { display: flex; }
+            .page-container {
+                grid-template-columns: 1fr; /* Rips down sidebar columns completely */
+                padding: 10px;
+                gap: 5px;
+                min-height: auto;
+            }
+
+            .side-tower {
+                display: none !important; /* Discards skyscraper scripts on narrow viewports */
+            }
+
+            .top-tablet-banner {
+                display: flex; /* Activates layout for iPads */
+            }
+
+            .bottom-mobile-banner {
+                display: flex; /* Activates layout for phones */
+            }
+
             .logo-area h1 { font-size: 2rem; margin-top: 10px; }
         }
     </style>
@@ -193,7 +244,13 @@
 
     <div class="ad-zone side-tower">
         <script type="text/javascript">
-            atOptions = { 'key' : 'f3995c1d24c50c422f6a7a3faee8bd1e', 'format' : 'iframe', 'height' : 600, 'width' : 160, 'params' : {} };
+            atOptions = {
+                'key' : 'f3995c1d24c50c422f6a7a3faee8bd1e',
+                'format' : 'iframe',
+                'height' : 600,
+                'width' : 160,
+                'params' : {}
+            };
         </script>
         <script type="text/javascript" src="//www.highperformanceformat.com/f3995c1d24c50c422f6a7a3faee8bd1e/invoke.js"></script>
     </div>
@@ -202,7 +259,13 @@
 
         <div class="ad-zone top-tablet-banner" id="top-ad-container">
             <script type="text/javascript">
-                atOptions = { 'key' : '84b2623c46242433f5ba6a873de157ea', 'format' : 'iframe', 'height' : 60, 'width' : 468, 'params' : {} };
+                atOptions = {
+                    'key' : '84b2623c46242433f5ba6a873de157ea',
+                    'format' : 'iframe',
+                    'height' : 60,
+                    'width' : 468,
+                    'params' : {}
+                };
             </script>
             <script type="text/javascript" src="//www.highperformanceformat.com/84b2623c46242433f5ba6a873de157ea/invoke.js"></script>
         </div>
@@ -217,9 +280,9 @@
             <div class="button-stack">
                 <a href="chat.html" class="menu-btn btn-chat">Live Community Chat</a>
                 <a href="brickboom.html" class="menu-btn btn-brick">BrickBoom</a>
-                <a href="search_solver.html" class="menu-btn btn-solver">Word Search Solver</a>
-                <a href="floppy_bird.html" class="menu-btn btn-bird">Floppy Bird</a>
-                <a href="geometry_sprint.html" class="menu-btn btn-sprint">Geometry Sprint</a>
+                <a href="solver.html" class="menu-btn btn-solver">Word Search Solver</a>
+                <a href="flappy.html" class="menu-btn btn-bird">Floppy Bird</a>
+                <a href="geometry.html" class="menu-btn btn-sprint">Geometry Sprint</a>
                 <a href="polytrack.html" class="menu-btn btn-poly">Polytrack (404)</a>
                 <a href="cloud_drive.html" class="menu-btn btn-cloud">Video Cloud Drive</a>
             </div>
@@ -252,7 +315,13 @@
 
         <div class="ad-zone bottom-mobile-banner" id="bottom-ad-container">
             <script type="text/javascript">
-                atOptions = { 'key' : 'fb1f43cc4cddc790c0d68ec331d2dc8b', 'format' : 'iframe', 'height' : 50, 'width' : 320, 'params' : {} };
+                atOptions = {
+                    'key' : 'fb1f43cc4cddc790c0d68ec331d2dc8b',
+                    'format' : 'iframe',
+                    'height' : 50,
+                    'width' : 320,
+                    'params' : {}
+                };
             </script>
             <script type="text/javascript" src="//www.highperformanceformat.com/fb1f43cc4cddc790c0d68ec331d2dc8b/invoke.js"></script>
         </div>
@@ -260,8 +329,14 @@
     </div>
 
     <div class="ad-zone side-tower">
-        <script type="text/style">
-            atOptions = { 'key' : 'f3995c1d24c50c422f6a7a3faee8bd1e', 'format' : 'iframe', 'height' : 600, 'width' : 160, 'params' : {} };
+        <script type="text/javascript">
+            atOptions = {
+                'key' : 'f3995c1d24c50c422f6a7a3faee8bd1e',
+                'format' : 'iframe',
+                'height' : 600,
+                'width' : 160,
+                'params' : {}
+            };
         </script>
         <script type="text/javascript" src="//www.highperformanceformat.com/f3995c1d24c50c422f6a7a3faee8bd1e/invoke.js"></script>
     </div>
@@ -269,29 +344,28 @@
 </div>
 
 <script>
-    // PASTE YOUR SMARTLINKS FROM ADSTERRA HERE
-    const SMARTLINK_1 = "https://www.example.com/your-smartlink-1"; 
-    const SMARTLINK_2 = "https://www.example.com/your-smartlink-2";
+    // Your Live Adsterra Smartlink
+    const SMARTLINK_URL = "https://www.effectivecpmnetwork.com/r45u84gfw9?key=0350d574076e4f1bda57f47e74bc1329";
 
-    // Detect if user is on iPad, iPhone, or Android device
+    // Detect mobile or iPad viewports
     const isMobileOrTablet = window.innerWidth <= 850 || /Mobi|iPad|iPhone|Android/i.test(navigator.userAgent);
 
     if (isMobileOrTablet) {
-        // 1. Swap top banner with an unblockable anchor link banner
+        // 1. Swap top block with an unblockable anchor banner link
         document.getElementById('top-ad-container').innerHTML = `
-            <a href="${SMARTLINK_1}" target="_blank" style="width:100%; height:50px; background:#e67e22; border-radius:6px; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; text-decoration:none; font-size:14px; letter-spacing:1px; margin-bottom:10px;">
+            <a href="${SMARTLINK_URL}" target="_blank" style="width:100%; height:50px; background:#e67e22; border-radius:6px; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; text-decoration:none; font-size:14px; letter-spacing:1px; margin-bottom:10px;">
                 🔥 UNBLOCKED BONUS GAMES: CLICK TO UNLOCK 🔥
             </a>`;
 
-        // 2. Inject a premium glowing Smartlink button right inside the menu button stack
+        // 2. Inject a matching branded action button directly into the launcher menu
         document.getElementById('inline-smartlink-container').innerHTML = `
-            <a href="${SMARTLINK_2}" target="_blank" class="menu-btn btn-smartlink" style="margin-bottom: 20px;">
+            <a href="${SMARTLINK_URL}" target="_blank" class="menu-btn btn-smartlink" style="margin-bottom: 20px;">
                 🚀 Free Game Expansion Packs 🚀
             </a>`;
 
-        // 3. Swap bottom banner to cleanly match
+        // 3. Clean up the bottom banner zone with a lighter text link element
         document.getElementById('bottom-ad-container').innerHTML = `
-            <a href="${SMARTLINK_1}" target="_blank" style="width:100%; height:40px; background:#222; border:1px solid #444; border-radius:4px; display:flex; align-items:center; justify-content:center; color:#888; text-decoration:none; font-size:11px;">
+            <a href="${SMARTLINK_URL}" target="_blank" style="width:100%; height:40px; background:#222; border:1px solid #444; border-radius:4px; display:flex; align-items:center; justify-content:center; color:#888; text-decoration:none; font-size:11px;">
                 Advertisement - Click to support Arcade Hub
             </a>`;
     }
