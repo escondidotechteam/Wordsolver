@@ -7,159 +7,177 @@
     <style>
         body { margin: 0; text-align: center; background: #70c5ce; font-family: sans-serif; overflow: hidden; }
         canvas { display: block; margin: 20px auto; border: 4px solid #fff; border-radius: 8px; background: #4ec0ca; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        .ui { color: white; text-shadow: 2px 2px #000; }
-        .back-btn { text-decoration: none; color: white; background: #333; padding: 10px 20px; border-radius: 5px; display: inline-block; margin-top: 10px; transition: 0.2s; }
+        .ui { color: white; text-shadow: 2px 2px #000; margin-top: 10px; }
+        .back-btn { text-decoration: none; color: white; background: #333; padding: 10px 20px; border-radius: 5px; display: inline-block; margin-top: 5px; transition: 0.2s; font-weight: bold; }
         .back-btn:hover { background: #555; }
     </style>
 </head>
 <body>
     <div class="ui">
         <h1>Floppy Bird</h1>
-        <p>Tap to jump | <strong>Hold</strong> for Super Leap</p>
+        <p style="margin: 5px 0;">Tap to jump | <strong>Hold</strong> for Super Leap</p>
+        <a href="index.html" class="back-btn">Back to Home Hub</a>
     </div>
-    <canvas id="c" width="320" height="480"></canvas>
-    <br>
-    <a href="index.html" class="back-btn">Back to Home</a>
+    <canvas id=\"c\" width=\"320\" height=\"480\"></canvas>
 
     <script>
-const c = document.getElementById('c'), ctx = c.getContext('2d');
+        const c = document.getElementById('c');
+        const ctx = c.getContext('2d');
 
-// --- TWEAKED BIRD CONTROLS ---
-// Lowered 'jump' to 2.5 and 'thrust' to 0.3 for smaller leaps
-let bird = { x: 50, y: 150, v: 0, g: 0.22, jump: 2.5, thrust: 0.3, r: 14 };
-let pipes = [], clouds = [], frame = 0, score = 0, gameOver = false, isHolding = false;
+        let bird, pipes, clouds, score, frame, gameOver, isHolding;
 
-function reset() {
-    bird.y = 150; bird.v = 0; pipes = []; clouds = []; score = 0; frame = 0; gameOver = false;
-}
-
-function drawBird(x, y, r, v) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(Math.min(Math.PI / 4, Math.max(-Math.PI / 4, v * 0.1)));
-    
-    // Body
-    ctx.fillStyle = isHolding ? '#FFD700' : 'yellow';
-    ctx.beginPath();
-    ctx.ellipse(0, 0, r, r * 0.8, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = 'black'; ctx.lineWidth = 2; ctx.stroke();
-
-    // Wing
-    let wingWiggle = isHolding ? Math.sin(frame * 0.5) * 5 : 0;
-    ctx.fillStyle = 'white';
-    ctx.beginPath();
-    ctx.ellipse(-5, 2 + wingWiggle, 8, 5, v * 0.1, 0, Math.PI * 2);
-    ctx.fill(); ctx.stroke();
-
-    // Eye
-    ctx.fillStyle = 'white';
-    ctx.beginPath(); ctx.arc(6, -4, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = 'black';
-    ctx.beginPath(); ctx.arc(8, -4, 2, 0, Math.PI * 2); ctx.fill();
-
-    // Beak
-    ctx.fillStyle = 'orange';
-    ctx.beginPath();
-    ctx.moveTo(12, -2); ctx.lineTo(22, 2); ctx.lineTo(12, 6);
-    ctx.closePath(); ctx.fill(); ctx.stroke();
-    
-    ctx.restore();
-}
-
-function drawPipe(x, y, w, gap) {
-    ctx.fillStyle = '#73bf2e';
-    ctx.strokeStyle = '#000';
-    ctx.lineWidth = 2;
-    // Top
-    ctx.fillRect(x, 0, w, y); ctx.strokeRect(x, 0, w, y);
-    ctx.fillRect(x - 5, y - 20, w + 10, 20); ctx.strokeRect(x - 5, y - 20, w + 10, 20);
-    // Bottom
-    ctx.fillRect(x, y + gap, w, c.height); ctx.strokeRect(x, y + gap, w, c.height);
-    ctx.fillRect(x - 5, y + gap, w + 10, 20); ctx.strokeRect(x - 5, y + gap, w + 10, 20);
-}
-
-function drawCloud(cl) {
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-    ctx.beginPath();
-    ctx.arc(cl.x, cl.y, cl.r, 0, Math.PI * 2);
-    ctx.arc(cl.x + 15, cl.y - 10, cl.r, 0, Math.PI * 2);
-    ctx.arc(cl.x + 30, cl.y, cl.r, 0, Math.PI * 2);
-    ctx.fill();
-}
-
-function loop() {
-    if (!gameOver) {
-        // Continuous Thrust Logic
-        if (isHolding) {
-            bird.v -= bird.thrust; 
-            if (bird.v < -7) bird.v = -7; 
+        function reset() {
+            bird = { x: 50, y: 200, r: 12, v: 0, g: 0.35, jump: 6.5, thrust: 0.6 };
+            pipes = [];
+            clouds = [];
+            score = 0;
+            frame = 0;
+            gameOver = false;
+            isHolding = false;
         }
 
-        // Physics
-        bird.v += bird.g;
-        bird.y += bird.v;
+        function drawBird(x, y, r, v) {
+            ctx.save();
+            ctx.translate(x, y);
+            let rot = Math.min(Math.max(v * 0.07, -0.4), 0.7);
+            ctx.rotate(rot);
+            
+            // Body Setup
+            ctx.fillStyle = '#f1c40f';
+            ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI*2); ctx.fill();
+            ctx.strokeStyle = '#000'; ctx.lineWidth = 2; ctx.stroke();
 
-        // Spawning
-        if (frame % 100 === 0) {
-            let h = Math.random() * (c.height - 250) + 50;
-            pipes.push({ x: c.width, y: h, w: 50, gap: 125 });
+            // Eye Design
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.arc(5, -4, 4, 0, Math.PI*2); ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = '#000';
+            ctx.beginPath(); ctx.arc(6, -4, 1.5, 0, Math.PI*2); ctx.fill();
+
+            // Beak
+            ctx.fillStyle = '#e67e22';
+            ctx.beginPath();
+            ctx.moveTo(10, -2); ctx.lineTo(17, 2); ctx.lineTo(10, 5);
+            ctx.closePath(); ctx.fill(); ctx.stroke();
+
+            // Wing structure
+            ctx.fillStyle = '#f39c12';
+            ctx.beginPath(); ctx.arc(-5, 2, 5, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+
+            ctx.restore();
         }
-        if (frame % 120 === 0) {
-            clouds.push({ x: c.width + 50, y: Math.random() * 150 + 50, r: 20, s: Math.random() + 0.5 });
+
+        function drawPipe(x, y, w, gap) {
+            ctx.fillStyle = '#2ecc71';
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2.5;
+
+            // Top segment draw frame
+            ctx.fillRect(x, 0, w, y);
+            ctx.strokeRect(x, -5, w, y + 5);
+            ctx.fillRect(x-4, y-20, w+8, 20);
+            ctx.strokeRect(x-4, y-20, w+8, 20);
+
+            // Bottom segment draw frame
+            let by = y + gap;
+            let bh = c.height - by;
+            ctx.fillRect(x, by, w, bh);
+            ctx.strokeRect(x, by, w, bh + 5);
+            ctx.fillRect(x-4, by, w+8, 20);
+            ctx.strokeRect(x-4, by, w+8, 20);
         }
 
-        pipes.forEach(p => p.x -= 2);
-        clouds.forEach(cl => cl.x -= cl.s);
-        pipes = pipes.filter(p => p.x + p.w + 10 > 0);
-        clouds = clouds.filter(cl => cl.x + 50 > 0);
+        function drawCloud(cl) {
+            ctx.fillStyle = 'rgba(255,255,255,0.75)';
+            ctx.beginPath();
+            ctx.arc(cl.x, cl.y, cl.r, 0, Math.PI*2);
+            ctx.arc(cl.x + 15, cl.y - 10, cl.r * 1.2, 0, Math.PI*2);
+            ctx.arc(cl.x + 35, cl.y, cl.r * 0.9, 0, Math.PI*2);
+            ctx.fill();
+        }
 
-        if (bird.y + bird.r > c.height) gameOver = true;
-        pipes.forEach(p => {
-            if (bird.x + bird.r > p.x && bird.x - bird.r < p.x + p.w) {
-                if (bird.y - bird.r < p.y || bird.y + bird.r > p.y + p.gap) gameOver = true;
+        // --- FPS TIME DELTA FRAME ENGINE GATE ---
+        let lastTime = 0;
+        const fpsTarget = 60;
+        const frameInterval = 1000 / fpsTarget;
+
+        function loop(timestamp) {
+            requestAnimationFrame(loop);
+
+            if (!timestamp) timestamp = performance.now();
+            let elapsed = timestamp - lastTime;
+
+            // Block cycle execution if running too hot
+            if (elapsed < frameInterval) return;
+            lastTime = timestamp - (elapsed % frameInterval);
+
+            if (!gameOver) {
+                if (isHolding) {
+                    bird.v -= bird.thrust; 
+                    if (bird.v < -7) bird.v = -7; 
+                }
+
+                bird.v += bird.g;
+                bird.y += bird.v;
+
+                if (frame % 100 === 0) {
+                    let h = Math.random() * (c.height - 250) + 50;
+                    pipes.push({ x: c.width, y: h, w: 50, gap: 125 });
+                }
+                if (frame % 120 === 0) {
+                    clouds.push({ x: c.width + 50, y: Math.random() * 150 + 50, r: 20, s: Math.random() + 0.5 });
+                }
+
+                pipes.forEach(p => p.x -= 2);
+                clouds.forEach(cl => cl.x -= cl.s);
+                pipes = pipes.filter(p => p.x + p.w + 10 > 0);
+                clouds = clouds.filter(cl => cl.x + 50 > 0);
+
+                if (bird.y + bird.r > c.height) gameOver = true;
+                pipes.forEach(p => {
+                    if (bird.x + bird.r > p.x && bird.x - bird.r < p.x + p.w) {
+                        if (bird.y - bird.r < p.y || bird.y + bird.r > p.y + p.gap) gameOver = true;
+                    }
+                    if (p.x === bird.x) score++;
+                });
             }
-            if (p.x === bird.x) score++;
-        });
-    }
 
-    ctx.fillStyle = '#4ec0ca'; ctx.fillRect(0, 0, c.width, c.height);
-    clouds.forEach(drawCloud);
-    pipes.forEach(p => drawPipe(p.x, p.y, p.w, p.gap));
-    drawBird(bird.x, bird.y, bird.r, bird.v);
+            ctx.fillStyle = '#4ec0ca'; ctx.fillRect(0, 0, c.width, c.height);
+            clouds.forEach(drawCloud);
+            pipes.forEach(p => drawPipe(p.x, p.y, p.w, p.gap));
+            drawBird(bird.x, bird.y, bird.r, bird.v);
 
-    ctx.fillStyle = 'white'; ctx.font = 'bold 35px Arial'; ctx.fillText(score, 10, 45);
-    
-    if (gameOver) {
-        ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(0,0,c.width,c.height);
-        ctx.fillStyle = 'white'; ctx.textAlign = "center";
-        ctx.font = '40px Arial'; ctx.fillText("GAME OVER", c.width/2, 240);
-        ctx.font = '20px Arial'; ctx.fillText("Tap to Restart", c.width/2, 280);
-        ctx.textAlign = "start";
-    }
+            ctx.fillStyle = 'white'; ctx.font = 'bold 35px Arial'; ctx.fillText(score, 10, 45);
+            
+            if (gameOver) {
+                ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(0,0,c.width,c.height);
+                ctx.fillStyle = 'white'; ctx.textAlign = "center";
+                ctx.font = '40px Arial'; ctx.fillText("GAME OVER", c.width/2, 240);
+                ctx.font = '20px Arial'; ctx.fillText("Tap to Restart", c.width/2, 280);
+                ctx.textAlign = "start";
+            }
 
-    frame++;
-    requestAnimationFrame(loop);
-}
+            frame++;
+        }
 
-// Controls
-const startAction = (e) => {
-    if (e.type === 'touchstart') e.preventDefault();
-    if (gameOver) { reset(); return; }
-    isHolding = true;
-    bird.v = -bird.jump;
-};
+        const startAction = (e) => {
+            if (e.type === 'touchstart') e.preventDefault();
+            if (gameOver) { reset(); return; }
+            isHolding = true;
+            bird.v = -bird.jump;
+        };
 
-const stopAction = () => { isHolding = false; };
+        const stopAction = () => { isHolding = false; };
 
-window.addEventListener('keydown', e => { if (e.code === 'Space') startAction(e); });
-window.addEventListener('keyup', e => { if (e.code === 'Space') stopAction(); });
-c.addEventListener('mousedown', startAction);
-window.addEventListener('mouseup', stopAction);
-c.addEventListener('touchstart', startAction);
-window.addEventListener('touchend', stopAction);
+        window.addEventListener('keydown', e => { if (e.code === 'Space') startAction(e); });
+        window.addEventListener('keyup', e => { if (e.code === 'Space') stopAction(); });
+        c.addEventListener('mousedown', startAction);
+        window.addEventListener('mouseup', stopAction);
+        c.addEventListener('touchstart', startAction);
+        window.addEventListener('touchend', stopAction);
 
-loop();
+        reset();
+        requestAnimationFrame(loop);
     </script>
 </body>
 </html>
