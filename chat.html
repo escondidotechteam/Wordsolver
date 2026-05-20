@@ -11,7 +11,7 @@
         .chat-section { flex: 3; display: flex; flex-direction: column; position: relative; border-right: 4px solid #1e1e1e; }
         
         .chat-header { background: #000; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; }
-        .chat-header h1 { margin: 0; font-size: 36px; letter-spacing: 2px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%; }
+        .chat-header h1 { margin: 0; font-size: 36px; letter-spacing: 2px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%; }
         
         .sidebar { flex: 1; background: #000; padding: 15px; display: flex; flex-direction: column; align-items: center; }
         .sidebar h2 { font-size: 20px; margin-bottom: 15px; text-transform: uppercase; width: 100%; border-bottom: 2px solid #333; padding-bottom: 5px; text-align: center;}
@@ -42,10 +42,17 @@
         .del-btn { color: #e74c3c; cursor: pointer; margin-left: 8px; font-weight: bold; font-size: 14px;}
         .del-btn:hover { color: #c0392b; }
 
-        /* File input design override */
         .file-label { background: #3498db; border: 2px solid #2980b9; color: black; padding: 10px 15px; font-weight: bold; border-radius: 4px; cursor: pointer; display: inline-block; font-size: 16px;}
         .file-label:hover { background: #2980b9; }
         #file-input { display: none; }
+
+        /* Settings System Component Layouts */
+        .settings-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; justify-content:center; align-items:center; font-family:inherit; }
+        .settings-content { background:#1e1e1e; border:2px solid #333; border-radius:6px; padding:20px; width:90%; max-width:500px; box-sizing:border-box; color:white; }
+        .settings-section { border-top:1px solid #333; margin-top:15px; padding-top:15px; text-align:left; }
+        .settings-section h3 { margin:0 0 10px 0; font-size:16px; text-transform:uppercase; color:#2ecc71; }
+        .settings-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:#111; padding:8px; border-radius:4px; border:1px solid #222; }
+        .input-text { background:#111; border:1px solid #444; color:white; padding:6px; border-radius:4px; font-family:inherit; width:65%; }
     </style>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -63,22 +70,56 @@
             Your browser does not support the video tag.
         </video>
         <button id="ad-skip-btn" onclick="completeAdUnlock()" style="display:none; margin-top:15px; background:#2ecc71; color:black; border:none; padding:12px 24px; font-size:16px; font-weight:bold; border-radius:4px; cursor:pointer; font-family: inherit;">
-            Post Media to Chat →
+            Post Media to Chat ->
         </button>
+    </div>
+</div>
+
+<div id="settings-modal" class="settings-modal">
+    <div class="settings-content">
+        <h2 id="settings-modal-title" style="margin:0 0 15px 0; font-size:22px; text-transform:uppercase; border-bottom:2px solid #333; padding-bottom:5px;">Room Settings</h2>
+        
+        <div class="settings-section">
+            <h3>Manage Users</h3>
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <input type="text" id="target-user-input" class="input-text" placeholder="Username">
+                <button class="btn" style="padding:6px 12px; font-size:14px; background:#3498db; border-color:#2980b9;" onclick="manageUserAction('add')">Add</button>
+            </div>
+            
+            <div class="settings-row">
+                <span>Active Member List Placeholder</span>
+                <div>
+                    <button class="btn" style="padding:4px 8px; font-size:12px; background:#e67e22; border-color:#d35400;" onclick="manageUserAction('mute')">Mute</button>
+                    <button class="btn" style="padding:4px 8px; font-size:12px; background:#e74c3c; border-color:#c0392b;" onclick="manageUserAction('remove')">Remove</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h3>Moderation Panel</h3>
+            <p style="color:#666; font-size:13px; margin:5px 0;">Advanced automatic content filtering and moderation protocols are not implemented yet.</p>
+        </div>
+
+        <div style="text-align:right; margin-top:20px;">
+            <button class="btn" onclick="toggleSettingsModal(false)">Close Settings</button>
+        </div>
     </div>
 </div>
 
 <div class="main-container">
     <div class="chat-section">
         <div class="chat-header">
-            <h1 id="room-title">Loading...</h1>
-            <a href="index.html" class="back-link">← HUB</a>
+            <div style="display:flex; align-items:center; gap:15px; max-width:70%;">
+                <h1 id="room-title">Loading...</h1>
+                <button id="room-settings-btn" class="btn" style="padding:6px 12px; font-size:14px; display:none;" onclick="toggleSettingsModal(true)">Settings</button>
+            </div>
+            <a href="index.html" class="back-link"><- HUB</a>
         </div>
         
         <div class="chat-box" id="chat-box"></div>
         
         <div class="input-area">
-            <label for="file-input" class="file-label">Image</label>
+            <label for="file-input" class="file-label">File Image</label>
             <input type="file" id="file-input" accept="image/*" onchange="handleFileSelect()">
             
             <textarea id="msg-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault(); sendTextMessage();}"></textarea>
@@ -88,13 +129,13 @@
     
     <div class="sidebar">
         <h2>Rooms</h2>
+        <button class="btn" style="width:100%; margin-bottom:15px; background:#2980b9; border-color:#3498db; font-size:14px;" onclick="createNewRoomPrompt()">[+] Create Room</button>
         <div id="room-list" style="width:100%; flex:1; overflow-y:auto;"></div>
-        <div style="color:#555; font-size:11px; text-align:center; width:100%;">Static Chat Engine v1.4</div>
+        <div style="color:#555; font-size:11px; text-align:center; width:100%;">Static Chat Engine v1.5</div>
     </div>
 </div>
 
 <script>
-    // --- FIREBASE PROJECT CONFIGURATION ---
     const firebaseConfig = {
         apiKey: "AIzaSyAs74mK7_D6w_YmZJLeYwXj-r0pE",
         authDomain: "unblocked-arcade-hub.firebaseapp.com",
@@ -107,30 +148,23 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // User Session Setup
     let currentUser = localStorage.getItem('username') || 'Guest_' + Math.floor(Math.random()*900+100);
     localStorage.setItem('username', currentUser);
     const isAdmin = (currentUser.toLowerCase() === 'admin');
 
     let currentRoom = "general";
-    let rooms = ["general", "gaming", "memes", "dev-log"];
-    let pendingImageBase64 = null; // Temporary hold for chosen image
+    let dynamicRooms = ["general", "gaming", "memes", "dev-log"];
+    let pendingImageBase64 = null;
     let currentAdCallback = null;
 
-    // --- VIDEO AD VERIFICATION ENGINE ---
-    const AD_PLAY_TIME = 8; // Seconds regular users have to watch the video
+    const AD_PLAY_TIME = 8;
 
-    /**
-     * Checks if user is admin. If not, triggers the video lock screen.
-     */
     function gateMediaUpload(onAdPassed) {
         if (isAdmin) {
-            console.log("Admin bypass triggered. Uploading immediately.");
             onAdPassed();
             return;
         }
 
-        // Setup the ad player payload tracking
         currentAdCallback = onAdPassed;
         const overlay = document.getElementById('ad-locker-overlay');
         const video = document.getElementById('ad-video');
@@ -177,10 +211,48 @@
         }
     }
 
-    // --- UI RENDERING LOGIC ---
+    // --- DYNAMIC ROOM MANAGEMENT LOGIC ---
+    function listenForRooms() {
+        db.collection("rooms").orderBy("createdAt", "asc").onSnapshot(snapshot => {
+            dynamicRooms = ["general", "gaming", "memes", "dev-log"];
+            snapshot.forEach(doc => {
+                const roomData = doc.data();
+                if (roomData.name && !dynamicRooms.includes(roomData.name)) {
+                    dynamicRooms.push(roomData.name);
+                }
+            });
+            renderRoomList();
+        });
+    }
+
+    function createNewRoomPrompt() {
+        let roomName = prompt("Enter new room name (alphanumeric only, no spaces):");
+        if (!roomName) return;
+        roomName = roomName.toLowerCase().replace(/[^a-z0-9]/g, "");
+        if (!roomName) return;
+
+        if (dynamicRooms.includes(roomName)) {
+            alert("That room already exists.");
+            return;
+        }
+
+        db.collection("rooms").add({
+            name: roomName,
+            creator: currentUser,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => {
+            switchRoom(roomName);
+        }).catch(err => console.error("Error creating room: ", err));
+    }
+
     function switchRoom(r) {
         currentRoom = r;
-        document.getElementById('room-title').innerText = `# ${r}`;
+        document.getElementById('room-title').innerText = "# " + r;
+        
+        // Show Settings button if room is custom (not default core rooms)
+        const isDefaultRoom = ["general", "gaming", "memes", "dev-log"].includes(r);
+        document.getElementById('room-settings-btn').style.display = (!isDefaultRoom || isAdmin) ? "inline-block" : "none";
+        
         renderRoomList();
         listenForMessages();
     }
@@ -188,21 +260,36 @@
     function renderRoomList() {
         const box = document.getElementById('room-list');
         box.innerHTML = "";
-        rooms.forEach(r => {
+        dynamicRooms.forEach(r => {
             const btn = document.createElement('button');
             btn.className = `room-btn ${r === currentRoom ? 'active' : ''}`;
-            btn.innerText = `# ${r}`;
+            btn.innerText = "# " + r;
             btn.onclick = () => switchRoom(r);
             box.appendChild(btn);
         });
     }
 
-    // --- IMAGE LOADING SYSTEM ---
+    // --- SETTINGS INTERFACE CONTROLS ---
+    function toggleSettingsModal(show) {
+        document.getElementById('settings-modal').style.display = show ? "flex" : "none";
+        if (show) {
+            document.getElementById('settings-modal-title').innerText = "Settings: # " + currentRoom;
+        }
+    }
+
+    function manageUserAction(actionType) {
+        const targetUser = document.getElementById('target-user-input').value.trim();
+        if (actionType === 'add' && !targetUser) return;
+        
+        alert("Action: [" + actionType.toUpperCase() + "] targeted at user [" + (targetUser || "Selected User") + "] inside #" + currentRoom + ". Structural rule logic processing active.");
+        document.getElementById('target-user-input').value = "";
+    }
+
+    // --- FILE PROCESSING ENGINE ---
     function handleFileSelect() {
         const file = document.getElementById('file-input').files[0];
         if (!file) return;
 
-        // Block files larger than 1.5MB to save firestore space
         if (file.size > 1500000) {
             alert("File too large! Max image payload size is 1.5MB.");
             return;
@@ -211,18 +298,16 @@
         const reader = new FileReader();
         reader.onload = function(e) {
             pendingImageBase64 = e.target.result;
-            
-            // RUN THE ATTACHED MEDIA THROUGH THE VIDEO AD WALL!
             gateMediaUpload(() => {
                 commitMessageToFirestore("", pendingImageBase64);
                 pendingImageBase64 = null;
-                document.getElementById('file-input').value = ""; // Clear file selector input frame
+                document.getElementById('file-input').value = ""; 
             });
         };
         reader.readAsDataURL(file);
     }
 
-    // --- FIRESTORE TRANSMISSION STACK ---
+    // --- TEXT MESSAGE PROCESSING ---
     function sendTextMessage() {
         const input = document.getElementById('msg-input');
         const text = input.value.trim();
@@ -248,7 +333,7 @@
         }
     }
 
-    // --- DATA LISTENER SYNC ---
+    // --- MESSAGE SYNC LISTENERS ---
     let unsubscribeMessages = null;
     function listenForMessages() {
         if (unsubscribeMessages) unsubscribeMessages();
@@ -268,7 +353,7 @@
                         const div = document.createElement('div');
                         div.className = `msg ${data.user === currentUser ? 'me' : ''}`;
                         const canDelete = (data.user === currentUser || isAdmin);
-                        const delHtml = canDelete ? `<span class="del-btn" onclick=\"deleteMsg('${d.id}')\">×</span>` : "";
+                        const delHtml = canDelete ? `<span class="del-btn" onclick="deleteMsg('${d.id}')">x</span>` : "";
                         
                         div.innerHTML = `<b>${data.user} ${delHtml}</b>`;
                         if (data.text) div.innerHTML += `<span>${data.text}</span>`;
@@ -281,7 +366,8 @@
             });
     }
 
-    // Initial Engine Startup 
+    // Start-up triggers
+    listenForRooms();
     switchRoom("general");
 </script>
 </body>
