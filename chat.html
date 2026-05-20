@@ -10,190 +10,279 @@
         .main-container { display: flex; flex: 1; overflow: hidden; }
         .chat-section { flex: 3; display: flex; flex-direction: column; position: relative; border-right: 4px solid #1e1e1e; }
         
-        /* Header styling from your sketch */
         .chat-header { background: #000; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; }
         .chat-header h1 { margin: 0; font-size: 36px; letter-spacing: 2px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%; }
         
         .sidebar { flex: 1; background: #000; padding: 15px; display: flex; flex-direction: column; align-items: center; }
-        .sidebar h2 { font-size: 20px; margin-bottom: 15px; color: #fff; border-bottom: 2px solid #2ecc71; width: 100%; text-align: center; padding-bottom: 5px; }
+        .sidebar h2 { font-size: 20px; margin-bottom: 15px; text-transform: uppercase; width: 100%; border-bottom: 2px solid #333; padding-bottom: 5px; text-align: center;}
         
-        /* Sidebar Room Cards */
-        #room-list { width: 100%; display: flex; flex-direction: column; gap: 10px; align-items: center; }
-        .room-card { background: #1a1a1a; border: 1px solid #444; border-radius: 4px; padding: 10px; width: 90%; }
-        .room-card h4 { margin: 0 0 5px 0; color: #2ecc71; font-size: 14px; }
-        .open-btn { background: #a30000; color: white; border: none; padding: 4px 8px; border-radius: 2px; font-weight: bold; cursor: pointer; float: right; font-size: 10px; }
-
-        #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: #222; }
-        .msg { background: #1a1a1a; padding: 12px; border-radius: 4px; max-width: 80%; border-left: 4px solid #444; }
-        .msg.me { align-self: flex-end; border-left: none; border-right: 4px solid #2ecc71; }
-        .msg b { color: #2ecc71; font-size: 0.9em; display: block; margin-bottom: 5px; }
-        .del-btn { color: #e74c3c; font-size: 14px; cursor: pointer; float: right; }
-
-        /* Input Area */
-        .bottom-bar { background: #000; padding: 20px; display: flex; gap: 10px; align-items: center; border-top: 3px solid #1a1a1a; }
-        .input-wrap { flex: 1; background: #1a1a1a; border: 2px solid #333; border-radius: 4px; display: flex; align-items: center; padding: 2px 10px; }
-        input[type="text"] { flex: 1; background: transparent; border: none; color: white; padding: 10px; font-size: 16px; outline: none; font-family: inherit; }
+        .chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #0a0a0a; }
         
-        .send-btn { background: #006400; color: white; border: 2px solid #004d00; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; }
-        .exit-link { color: #444; font-size: 10px; text-decoration: none; margin-left: 5px; }
+        .msg { background: #1e1e1e; padding: 12px; border-radius: 4px; border: 1px solid #333; max-width: 75%; width: fit-content; word-break: break-all;}
+        .msg.me { background: #111; border-color: #2ecc71; align-self: flex-end; }
+        .msg b { color: #f1c40f; display: block; margin-bottom: 4px; font-size: 14px;}
+        .msg.me b { color: #2ecc71; }
+        .msg span { font-size: 16px; }
+        
+        .input-area { background: #000; padding: 15px; display: flex; gap: 10px; align-items: center; border-top: 2px solid #333; }
+        textarea { flex: 1; background: #111; border: 2px solid #333; color: white; padding: 10px; font-family: inherit; font-size: 16px; resize: none; height: 24px; border-radius: 4px;}
+        textarea:focus { border-color: #2ecc71; outline: none; }
+        
+        .btn { background: #333; color: white; border: 2px solid #555; padding: 10px 20px; cursor: pointer; font-family: inherit; font-size: 16px; font-weight: bold; border-radius: 4px; transition: 0.1s;}
+        .btn:hover { background: #444; }
+        .btn-send { background: #2ecc71; border-color: #27ae60; color: black; }
+        .btn-send:hover { background: #27ae60; }
+        
+        .room-btn { width: 100%; background: #111; border: 2px solid #333; color: #888; padding: 12px; margin-bottom: 10px; text-align: left; font-family: inherit; font-size: 16px; cursor: pointer; border-radius: 4px;}
+        .room-btn.active { border-color: #2ecc71; color: white; font-weight: bold; background: #0a0a0a; }
+        
+        .back-link { color: #e74c3c; text-decoration: none; font-weight: bold; font-size: 16px; border: 2px solid #e74c3c; padding: 8px 12px; border-radius: 4px;}
+        .back-link:hover { background: rgba(231,76,60,0.1); }
+        
+        .del-btn { color: #e74c3c; cursor: pointer; margin-left: 8px; font-weight: bold; font-size: 14px;}
+        .del-btn:hover { color: #c0392b; }
 
-        /* Modal */
-        #settings-modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#111; padding:25px; border:2px solid #2ecc71; z-index:1000; text-align: center; }
+        /* File input design override */
+        .file-label { background: #3498db; border: 2px solid #2980b9; color: black; padding: 10px 15px; font-weight: bold; border-radius: 4px; cursor: pointer; display: inline-block; font-size: 16px;}
+        .file-label:hover { background: #2980b9; }
+        #file-input { display: none; }
     </style>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 </head>
 <body>
+
+<div id="ad-locker-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:9999; justify-content:center; align-items:center; flex-direction:column; font-family:sans-serif; color:white;">
+    <div style="position:relative; width:90%; max-width:640px; background:#111; border:2px solid #333; border-radius:8px; padding:15px; text-align:center;">
+        <div id="ad-status" style="background:#222; padding:8px; margin-bottom:12px; font-weight:bold; color:#f1c40f; border-radius:4px; font-family: monospace;">
+            Ad Loading...
+        </div>
+        <video id="ad-video" width="100%" style="border-radius:4px; background:#000;" playsinline>
+            <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <button id="ad-skip-btn" onclick="completeAdUnlock()" style="display:none; margin-top:15px; background:#2ecc71; color:black; border:none; padding:12px 24px; font-size:16px; font-weight:bold; border-radius:4px; cursor:pointer; font-family: inherit;">
+            Post Media to Chat →
+        </button>
+    </div>
+</div>
 
 <div class="main-container">
     <div class="chat-section">
         <div class="chat-header">
-            <span style="font-size: 35px; cursor: pointer; color: #555;" onclick="toggleSettings()">✱</span>
-            <h1 id="room-display">Global Chat</h1>
-            <a href="index.html" class="exit-link">EXIT</a>
+            <h1 id="room-title">Loading...</h1>
+            <a href="index.html" class="back-link">← HUB</a>
         </div>
-
-        <div id="chat-box"></div>
-
-        <div class="bottom-bar">
-            <span style="font-size: 28px; cursor: pointer; color: #2ecc71;" onclick="setupPrivateRoom()">✚</span>
-            <span style="font-size: 28px; cursor: pointer; color: #3498db; margin-left: 10px;" onclick="document.getElementById('fileInput').click()">🌀</span>
-            <input type="file" id="fileInput" style="display:none" onchange="sendFile()">
+        
+        <div class="chat-box" id="chat-box"></div>
+        
+        <div class="input-area">
+            <label for="file-input" class="file-label">📁 Image</label>
+            <input type="file" id="file-input" accept="image/*" onchange="handleFileSelect()">
             
-            <div class="input-wrap">
-                <input type="text" id="msgInput" placeholder="Message...">
-            </div>
-            
-            <button class="send-btn" onclick="sendMsg()">Send</button>
+            <textarea id="msg-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault(); sendTextMessage();}"></textarea>
+            <button class="btn btn-send" onclick="sendTextMessage()">SEND</button>
         </div>
     </div>
-
+    
     <div class="sidebar">
-        <h2>Private Chats</h2>
-        <div id="room-list">
-            </div>
-        <button onclick="switchRoom('public')" style="margin-top: 15px; background: #333; color: white; border: none; padding: 5px 10px; cursor: pointer; font-size: 10px;">Return to Global</button>
+        <h2>Rooms</h2>
+        <div id="room-list" style="width:100%; flex:1; overflow-y:auto;"></div>
+        <div style="color:#555; font-size:11px; text-align:center; width:100%;">Static Chat Engine v1.4</div>
     </div>
 </div>
 
-<div id="settings-modal">
-    <h3>System Configuration</h3>
-    <label style="font-size: 12px;"><input type="checkbox" id="save-local" onchange="updateSaveSetting()"> LOCAL CACHE (Bypass 5m Delete)</label><br><br>
-    <button class="send-btn" onclick="toggleSettings()">CLOSE</button>
-</div>
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
-
+<script>
+    // --- FIREBASE PROJECT CONFIGURATION ---
     const firebaseConfig = {
-        apiKey: "AIzaSyDhYmRfVmyM011-6dFsjalCFVGoYmIL-z4",
-        authDomain: "privatearcadechat.firebaseapp.com",
-        projectId: "privatearcadechat",
-        storageBucket: "privatearcadechat.firebasestorage.app",
-        messagingSenderId: "762409625215",
-        appId: "1:762409625215:web:2f33f867309474f812c14a"
+        apiKey: "AIzaSyAs74mK7_D6w_YmZJLeYwXj-r0pE",
+        authDomain: "unblocked-arcade-hub.firebaseapp.com",
+        projectId: "unblocked-arcade-hub",
+        storageBucket: "unblocked-arcade-hub.appspot.com",
+        messagingSenderId: "38491029384",
+        appId: "1:38491029384:web:8d7a7b6c5b4a3f2e1d"
     };
+    
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const storage = getStorage(app);
+    // User Session Setup
+    let currentUser = localStorage.getItem('username') || 'Guest_' + Math.floor(Math.random()*900+100);
+    localStorage.setItem('username', currentUser);
+    const isAdmin = (currentUser.toLowerCase() === 'admin');
 
-    const currentUser = localStorage.getItem('username') || "Guest";
-    const isAdmin = (currentUser === "MasterAdmin");
-    let currentRoom = "public";
-    let allowedUsers = [];
-    let knownRooms = JSON.parse(localStorage.getItem('knownRooms') || "[]");
+    let currentRoom = "general";
+    let rooms = ["general", "gaming", "memes", "dev-log"];
+    let pendingImageBase64 = null; // Temporary hold for chosen image
+    let currentAdCallback = null;
 
-    window.toggleSettings = () => {
-        const modal = document.getElementById('settings-modal');
-        modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
-    };
+    // --- VIDEO AD VERIFICATION ENGINE ---
+    const AD_PLAY_TIME = 8; // Seconds regular users have to watch the video
 
-    window.updateSaveSetting = () => {
-        localStorage.setItem('downloadChat', document.getElementById('save-local').checked);
-    };
-
-    // --- ROOM MANAGEMENT ---
-    window.setupPrivateRoom = () => {
-        const room = prompt("Enter Room Name:");
-        const users = prompt("Allowed Users (comma separated):");
-        if (room && users) {
-            const list = users.split(',').map(u => u.trim());
-            const newRoom = { name: room, users: list };
-            knownRooms.push(newRoom);
-            localStorage.setItem('knownRooms', JSON.stringify(knownRooms));
-            renderRoomList();
-            switchRoom(room, list);
+    /**
+     * Checks if user is admin. If not, triggers the video lock screen.
+     */
+    function gateMediaUpload(onAdPassed) {
+        if (isAdmin) {
+            console.log("Admin bypass triggered. Uploading immediately.");
+            onAdPassed();
+            return;
         }
-    };
 
-    window.switchRoom = (roomName, userList = []) => {
-        currentRoom = roomName;
-        allowedUsers = userList;
-        document.getElementById('room-display').innerText = roomName === 'public' ? "Global Chat" : roomName;
+        // Setup the ad player payload tracking
+        currentAdCallback = onAdPassed;
+        const overlay = document.getElementById('ad-locker-overlay');
+        const video = document.getElementById('ad-video');
+        const statusText = document.getElementById('ad-status');
+        const skipBtn = document.getElementById('ad-skip-btn');
+
+        skipBtn.style.display = "none";
+        overlay.style.display = "flex";
+        
+        video.currentTime = 0;
+        video.play().catch(() => {
+            statusText.innerText = "⚠️ Click Video Play to Unlock File Upload";
+            video.muted = true;
+            video.play();
+        });
+
+        let countdownLeft = AD_PLAY_TIME;
+        statusText.innerText = `Watching Ad to Unlock Posting Images: ${countdownLeft}s...`;
+
+        const interval = setInterval(() => {
+            countdownLeft--;
+            if (countdownLeft > 0) {
+                statusText.innerText = `Watching Ad to Unlock Posting Images: ${countdownLeft}s...`;
+            } else {
+                clearInterval(interval);
+                statusText.innerText = "🎉 Verification Complete! Click button to post.";
+                skipBtn.style.display = "inline-block";
+            }
+        }, 1000);
+
+        video.onended = () => {
+            clearInterval(interval);
+            statusText.innerText = "🎉 Verification Complete! Click button to post.";
+            skipBtn.style.display = "inline-block";
+        };
+    }
+
+    function completeAdUnlock() {
+        document.getElementById('ad-locker-overlay').style.display = "none";
+        document.getElementById('ad-video').pause();
+        if (currentAdCallback) {
+            currentAdCallback();
+            currentAdCallback = null;
+        }
+    }
+
+    // --- UI RENDERING LOGIC ---
+    function switchRoom(r) {
+        currentRoom = r;
+        document.getElementById('room-title').innerText = `# ${r}`;
+        renderRoomList();
         listenForMessages();
-    };
+    }
 
     function renderRoomList() {
-        const listDiv = document.getElementById('room-list');
-        listDiv.innerHTML = "";
-        knownRooms.forEach(room => {
-            const div = document.createElement('div');
-            div.className = "room-card";
-            div.innerHTML = `<h4>${room.name}</h4><button class="open-btn" onclick="switchRoom('${room.name}', ${JSON.stringify(room.users)})">OPEN</button>`;
-            listDiv.appendChild(div);
+        const box = document.getElementById('room-list');
+        box.innerHTML = "";
+        rooms.forEach(r => {
+            const btn = document.createElement('button');
+            btn.className = `room-btn ${r === currentRoom ? 'active' : ''}`;
+            btn.innerText = `# ${r}`;
+            btn.onclick = () => switchRoom(r);
+            box.appendChild(btn);
         });
     }
 
-    // --- MESSAGING ---
-    window.sendMsg = async () => {
-        const text = document.getElementById('msgInput').value.trim();
-        if (!text) return;
-        await addDoc(collection(db, "messages"), { text, user: currentUser, room: currentRoom, allowed: allowedUsers, createdAt: serverTimestamp() });
-        document.getElementById('msgInput').value = "";
-    };
+    // --- IMAGE LOADING SYSTEM ---
+    function handleFileSelect() {
+        const file = document.getElementById('file-input').files[0];
+        if (!file) return;
 
-    window.deleteMsg = async (id) => {
-        if (confirm("Delete from server?")) await deleteDoc(doc(db, "messages", id));
-    };
+        // Block files larger than 1.5MB to save firestore space
+        if (file.size > 1500000) {
+            alert("File too large! Max image payload size is 1.5MB.");
+            return;
+        }
 
-    let unsubscribe;
-    function listenForMessages() {
-        if (unsubscribe) unsubscribe();
-        const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
-        unsubscribe = onSnapshot(q, (snapshot) => {
-            const box = document.getElementById('chat-box');
-            box.innerHTML = "";
-            const now = Date.now();
-            const fiveMinutes = 5 * 60 * 1000;
-            const shouldDownload = localStorage.getItem('downloadChat') === 'true';
-
-            snapshot.forEach(d => {
-                const data = d.data();
-                const msgTime = data.createdAt ? data.createdAt.toDate().getTime() : now;
-                const isOld = (now - msgTime) > fiveMinutes;
-
-                // Visibility logic
-                const canSee = (data.room === currentRoom) || isAdmin;
-                
-                if (canSee) {
-                    if (isOld && !shouldDownload) return;
-                    const div = document.createElement('div');
-                    div.className = `msg ${data.user === currentUser ? 'me' : ''}`;
-                    const canDelete = (data.user === currentUser || isAdmin);
-                    const delHtml = canDelete ? `<span class="del-btn" onclick="deleteMsg('${d.id}')">×</span>` : "";
-                    div.innerHTML = `<b>${data.user} ${delHtml}</b>`;
-                    if (data.text) div.innerHTML += `<span>${data.text}</span>`;
-                    if (data.img) div.innerHTML += `<img src="${data.img}" style="max-width:100%; margin-top:5px; border-radius:2px;">`;
-                    box.appendChild(div);
-                }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            pendingImageBase64 = e.target.result;
+            
+            // RUN THE ATTACHED MEDIA THROUGH THE VIDEO AD WALL!
+            gateMediaUpload(() => {
+                commitMessageToFirestore("", pendingImageBase64);
+                pendingImageBase64 = null;
+                document.getElementById('file-input').value = ""; // Clear file selector input frame
             });
-            box.scrollTop = box.scrollHeight;
-        });
+        };
+        reader.readAsDataURL(file);
     }
 
-    renderRoomList();
-    listenForMessages();
+    // --- FIRESTORE TRANSMISSION STACK ---
+    function sendTextMessage() {
+        const input = document.getElementById('msg-input');
+        const text = input.value.trim();
+        if (!text) return;
+        
+        commitMessageToFirestore(text, null);
+        input.value = "";
+    }
+
+    function commitMessageToFirestore(textVal, imgVal) {
+        db.collection("messages").add({
+            user: currentUser,
+            room: currentRoom,
+            text: textVal,
+            img: imgVal,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).catch(err => console.error("Write error: ", err));
+    }
+
+    function deleteMsg(id) {
+        if (confirm("Delete this message?")) {
+            db.collection("messages").doc(id).delete();
+        }
+    }
+
+    // --- DATA LISTENER SYNC ---
+    let unsubscribeMessages = null;
+    function listenForMessages() {
+        if (unsubscribeMessages) unsubscribeMessages();
+
+        unsubscribeMessages = db.collection("messages")
+            .orderBy("createdAt", "asc")
+            .limitToLast(60)
+            .onSnapshot(snapshot => {
+                const box = document.getElementById('chat-box');
+                box.innerHTML = "";
+                
+                snapshot.forEach(d => {
+                    const data = d.data();
+                    const canSee = (data.room === currentRoom) || isAdmin;
+                    
+                    if (canSee) {
+                        const div = document.createElement('div');
+                        div.className = `msg ${data.user === currentUser ? 'me' : ''}`;
+                        const canDelete = (data.user === currentUser || isAdmin);
+                        const delHtml = canDelete ? `<span class="del-btn" onclick=\"deleteMsg('${d.id}')\">×</span>` : "";
+                        
+                        div.innerHTML = `<b>${data.user} ${delHtml}</b>`;
+                        if (data.text) div.innerHTML += `<span>${data.text}</span>`;
+                        if (data.img) div.innerHTML += `<img src="${data.img}" style="max-width:100%; margin-top:5px; border-radius:2px; display:block;">`;
+                        
+                        box.appendChild(div);
+                    }
+                });
+                box.scrollTop = box.scrollHeight;
+            });
+    }
+
+    // Initial Engine Startup 
+    switchRoom("general");
 </script>
 </body>
 </html>
