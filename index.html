@@ -30,7 +30,7 @@
         /* ---------------------------------- */
         .page-container {
             display: grid;
-            grid-template-columns: 160px 1fr 160px; /* Restricts side towers to hold strict sizes */
+            grid-template-columns: 160px 1fr 160px;
             gap: 20px;
             width: 100%;
             max-width: 1200px;
@@ -40,7 +40,6 @@
             align-items: start;
         }
 
-        /* Centers the dashboard box perfectly */
         .hub-center {
             display: flex;
             flex-direction: column;
@@ -62,7 +61,6 @@
             font-weight: 800;
         }
 
-        /* The Main Hub Panel Box */
         .menu-panel {
             background: var(--panel-bg);
             border: 1px solid var(--border-color);
@@ -81,7 +79,6 @@
             font-weight: 600;
         }
 
-        /* Button Configuration */
         .button-stack {
             display: flex;
             flex-direction: column;
@@ -102,12 +99,13 @@
             cursor: pointer;
             text-decoration: none;
             transition: transform 0.1s, filter 0.2s;
+            text-align: center;
         }
 
         .menu-btn:active { transform: scale(0.98); }
         .menu-btn:hover { filter: brightness(1.1); }
 
-        /* Button Palette Mapping */
+        /* Color Coding */
         .btn-chat { background-color: #e74c3c; }
         .btn-brick { background-color: #9b59b6; }
         .btn-solver { background-color: #3498db; }
@@ -118,7 +116,6 @@
         .btn-play { background-color: #3498db; padding: 6px 12px; font-size: 14px; width: auto; display: inline-block;}
         .btn-share { background-color: #2ecc71; margin-top: 10px;}
         
-        /* Ko-fi Button Specific Design */
         .btn-kofi {
             background-color: #ff5e5b;
             display: flex;
@@ -126,13 +123,22 @@
             justify-content: center;
             gap: 10px;
         }
-        .kofi-cup {
-            width: 20px;
-            height: 20px;
-            filter: brightness(0) invert(1);
+        .kofi-cup { width: 20px; height: 20px; filter: brightness(0) invert(1); }
+
+        /* Unblockable Smartlink Banner Styling for iPads */
+        .btn-smartlink {
+            background: linear-gradient(135deg, #f39c12, #d35400);
+            border: 1px solid #e67e22;
+            animation: pulse 2s infinite;
         }
 
-        /* Level Share Area Styles */
+        @keyframes pulse {
+            0% { opacity: 0.9; }
+            50% { opacity: 1; transform: scale(1.01); }
+            100% { opacity: 0.9; }
+        }
+
+        /* Layout Dividers */
         .section-divider {
             border-top: 1px solid var(--border-color);
             margin: 20px 0;
@@ -164,62 +170,19 @@
         }
 
         .level-textarea { height: 60px; resize: none; }
+        .logout-btn { color: #c0392b; text-decoration: none; font-size: 13px; display: inline-block; margin-top: 15px; font-weight: bold; }
 
-        .logout-btn {
-            color: #c0392b;
-            text-decoration: none;
-            font-size: 13px;
-            display: inline-block;
-            margin-top: 15px;
-            font-weight: bold;
-        }
-        .logout-btn:hover { text-decoration: underline; }
-
-        /* ---------------------------------- */
-        /* ADSTERRA STRUCTURAL WRAPPERS       */
-        /* ---------------------------------- */
-        .ad-zone {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-sizing: border-box;
-        }
-
-        /* Desktop side settings */
-        .side-tower {
-            width: 160px;
-            min-height: 600px;
-            position: sticky;
-            top: 20px;
-        }
-
-        /* Mobile banners default to hidden status on PC monitors */
+        /* Ad Structural Boxes */
+        .ad-zone { display: flex; justify-content: center; align-items: center; box-sizing: border-box; }
+        .side-tower { width: 160px; min-height: 600px; position: sticky; top: 20px; }
         .top-tablet-banner { display: none; width: 100%; max-width: 468px; margin-bottom: 15px; }
         .bottom-mobile-banner { display: none; width: 100%; max-width: 320px; margin-top: 20px; }
 
-        /* ---------------------------------- */
-        /* MOBILE & IPAD RESPONSIVE QUERY CODE*/
-        /* ---------------------------------- */
         @media (max-width: 850px) {
-            .page-container {
-                grid-template-columns: 1fr; /* Rips down sidebar columns completely */
-                padding: 10px;
-                gap: 5px;
-                min-height: auto;
-            }
-
-            .side-tower {
-                display: none !important; /* Discards skyscraper scripts on narrow viewports */
-            }
-
-            .top-tablet-banner {
-                display: flex; /* Activates 468x60 layout for iPads */
-            }
-
-            .bottom-mobile-banner {
-                display: flex; /* Activates 320x50 layout for phones */
-            }
-
+            .page-container { grid-template-columns: 1fr; padding: 10px; gap: 5px; min-height: auto; }
+            .side-tower { display: none !important; }
+            .top-tablet-banner { display: flex; }
+            .bottom-mobile-banner { display: flex; }
             .logo-area h1 { font-size: 2rem; margin-top: 10px; }
         }
     </style>
@@ -230,28 +193,16 @@
 
     <div class="ad-zone side-tower">
         <script type="text/javascript">
-            atOptions = {
-                'key' : 'f3995c1d24c50c422f6a7a3faee8bd1e',
-                'format' : 'iframe',
-                'height' : 600,
-                'width' : 160,
-                'params' : {}
-            };
+            atOptions = { 'key' : 'f3995c1d24c50c422f6a7a3faee8bd1e', 'format' : 'iframe', 'height' : 600, 'width' : 160, 'params' : {} };
         </script>
         <script type="text/javascript" src="//www.highperformanceformat.com/f3995c1d24c50c422f6a7a3faee8bd1e/invoke.js"></script>
     </div>
 
     <div class="hub-center">
 
-        <div class="ad-zone top-tablet-banner">
+        <div class="ad-zone top-tablet-banner" id="top-ad-container">
             <script type="text/javascript">
-                atOptions = {
-                    'key' : '84b2623c46242433f5ba6a873de157ea',
-                    'format' : 'iframe',
-                    'height' : 60,
-                    'width' : 468,
-                    'params' : {}
-                };
+                atOptions = { 'key' : '84b2623c46242433f5ba6a873de157ea', 'format' : 'iframe', 'height' : 60, 'width' : 468, 'params' : {} };
             </script>
             <script type="text/javascript" src="//www.highperformanceformat.com/84b2623c46242433f5ba6a873de157ea/invoke.js"></script>
         </div>
@@ -272,6 +223,8 @@
                 <a href="polytrack.html" class="menu-btn btn-poly">Polytrack (404)</a>
                 <a href="cloud_drive.html" class="menu-btn btn-cloud">Video Cloud Drive</a>
             </div>
+
+            <div id="inline-smartlink-container"></div>
 
             <div class="section-divider">
                 <div class="panel-title" style="font-size: 1.1rem; margin-bottom: 15px;">Community Levels</div>
@@ -297,15 +250,9 @@
             <a href="logout.html" class="logout-btn">Log out</a>
         </div>
 
-        <div class="ad-zone bottom-mobile-banner">
+        <div class="ad-zone bottom-mobile-banner" id="bottom-ad-container">
             <script type="text/javascript">
-                atOptions = {
-                    'key' : 'fb1f43cc4cddc790c0d68ec331d2dc8b',
-                    'format' : 'iframe',
-                    'height' : 50,
-                    'width' : 320,
-                    'params' : {}
-                };
+                atOptions = { 'key' : 'fb1f43cc4cddc790c0d68ec331d2dc8b', 'format' : 'iframe', 'height' : 50, 'width' : 320, 'params' : {} };
             </script>
             <script type="text/javascript" src="//www.highperformanceformat.com/fb1f43cc4cddc790c0d68ec331d2dc8b/invoke.js"></script>
         </div>
@@ -313,14 +260,8 @@
     </div>
 
     <div class="ad-zone side-tower">
-        <script type="text/javascript">
-            atOptions = {
-                'key' : 'f3995c1d24c50c422f6a7a3faee8bd1e',
-                'format' : 'iframe',
-                'height' : 600,
-                'width' : 160,
-                'params' : {}
-            };
+        <script type="text/style">
+            atOptions = { 'key' : 'f3995c1d24c50c422f6a7a3faee8bd1e', 'format' : 'iframe', 'height' : 600, 'width' : 160, 'params' : {} };
         </script>
         <script type="text/javascript" src="//www.highperformanceformat.com/f3995c1d24c50c422f6a7a3faee8bd1e/invoke.js"></script>
     </div>
@@ -328,6 +269,33 @@
 </div>
 
 <script>
+    // PASTE YOUR SMARTLINKS FROM ADSTERRA HERE
+    const SMARTLINK_1 = "https://www.example.com/your-smartlink-1"; 
+    const SMARTLINK_2 = "https://www.example.com/your-smartlink-2";
+
+    // Detect if user is on iPad, iPhone, or Android device
+    const isMobileOrTablet = window.innerWidth <= 850 || /Mobi|iPad|iPhone|Android/i.test(navigator.userAgent);
+
+    if (isMobileOrTablet) {
+        // 1. Swap top banner with an unblockable anchor link banner
+        document.getElementById('top-ad-container').innerHTML = `
+            <a href="${SMARTLINK_1}" target="_blank" style="width:100%; height:50px; background:#e67e22; border-radius:6px; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; text-decoration:none; font-size:14px; letter-spacing:1px; margin-bottom:10px;">
+                🔥 UNBLOCKED BONUS GAMES: CLICK TO UNLOCK 🔥
+            </a>`;
+
+        // 2. Inject a premium glowing Smartlink button right inside the menu button stack
+        document.getElementById('inline-smartlink-container').innerHTML = `
+            <a href="${SMARTLINK_2}" target="_blank" class="menu-btn btn-smartlink" style="margin-bottom: 20px;">
+                🚀 Free Game Expansion Packs 🚀
+            </a>`;
+
+        // 3. Swap bottom banner to cleanly match
+        document.getElementById('bottom-ad-container').innerHTML = `
+            <a href="${SMARTLINK_1}" target="_blank" style="width:100%; height:40px; background:#222; border:1px solid #444; border-radius:4px; display:flex; align-items:center; justify-content:center; color:#888; text-decoration:none; font-size:11px;">
+                Advertisement - Click to support Arcade Hub
+            </a>`;
+    }
+
     function playLevel(levelId) {
         console.log("Loading level data string for: " + levelId);
     }
