@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Arcade Hub</title>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4886001552104921" crossorigin="anonymous"></script>
     <style>
-        /* Global CSS Variables for Quick Color Tweaks */
         :root {
             --bg-color: #121212;
             --panel-bg: #1e1e1e;
@@ -28,11 +26,11 @@
         }
 
         /* ---------------------------------- */
-        /* RESPONSIVE LAYOUT ENGINE (PC FIRST)*/
+        /* GRID LAYOUT ENGINE (PC / DESKTOP)  */
         /* ---------------------------------- */
         .page-container {
             display: grid;
-            grid-template-columns: 160px 1fr 160px; /* Side Skyscraper Slots */
+            grid-template-columns: 160px 1fr 160px; /* Restricts side towers to hold strict sizes */
             gap: 20px;
             width: 100%;
             max-width: 1200px;
@@ -42,7 +40,7 @@
             align-items: start;
         }
 
-        /* Center Hub Frame */
+        /* Centers the dashboard box perfectly */
         .hub-center {
             display: flex;
             flex-direction: column;
@@ -64,7 +62,7 @@
             font-weight: 800;
         }
 
-        /* Main Dashboard Panel */
+        /* The Main Hub Panel Box */
         .menu-panel {
             background: var(--panel-bg);
             border: 1px solid var(--border-color);
@@ -83,7 +81,7 @@
             font-weight: 600;
         }
 
-        /* Button Stack Styles */
+        /* Button Configuration */
         .button-stack {
             display: flex;
             flex-direction: column;
@@ -109,7 +107,7 @@
         .menu-btn:active { transform: scale(0.98); }
         .menu-btn:hover { filter: brightness(1.1); }
 
-        /* Color profiles matching your setup */
+        /* Button Palette Mapping */
         .btn-chat { background-color: #e74c3c; }
         .btn-brick { background-color: #9b59b6; }
         .btn-solver { background-color: #3498db; }
@@ -119,8 +117,22 @@
         .btn-cloud { background-color: #27ae60; }
         .btn-play { background-color: #3498db; padding: 6px 12px; font-size: 14px; width: auto; display: inline-block;}
         .btn-share { background-color: #2ecc71; margin-top: 10px;}
+        
+        /* Ko-fi Button Specific Design */
+        .btn-kofi {
+            background-color: #ff5e5b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .kofi-cup {
+            width: 20px;
+            height: 20px;
+            filter: brightness(0) invert(1);
+        }
 
-        /* Community Level Component Elements */
+        /* Level Share Area Styles */
         .section-divider {
             border-top: 1px solid var(--border-color);
             margin: 20px 0;
@@ -164,50 +176,50 @@
         .logout-btn:hover { text-decoration: underline; }
 
         /* ---------------------------------- */
-        /* AD SLOTS AND CONTAINERS            */
+        /* ADSTERRA STRUCTURAL WRAPPERS       */
         /* ---------------------------------- */
-        .ad-slot {
+        .ad-zone {
             display: flex;
             justify-content: center;
             align-items: center;
-            background: #181818;
-            border: 1px dashed #2a2a2a;
-            border-radius: 8px;
             box-sizing: border-box;
         }
 
-        /* Desktop Skyscraper Layout rules */
-        .side-ad {
+        /* Desktop side settings */
+        .side-tower {
             width: 160px;
-            height: 600px;
+            min-height: 600px;
             position: sticky;
             top: 20px;
         }
 
-        /* Mobile Mobile/Tablet Top & Bottom containers hidden on PC */
-        .mobile-ad { display: none; width: 100%; max-width: 450px; height: 50px; margin: 10px 0;}
+        /* Mobile banners default to hidden status on PC monitors */
+        .top-tablet-banner { display: none; width: 100%; max-width: 468px; margin-bottom: 15px; }
+        .bottom-mobile-banner { display: none; width: 100%; max-width: 320px; margin-top: 20px; }
 
         /* ---------------------------------- */
-        /* RESPONSIVE BREAKPOINT CODE         */
+        /* MOBILE & IPAD RESPONSIVE QUERY CODE*/
         /* ---------------------------------- */
-        
-        /* Handles Mobile devices and iPads/Tablets */
         @media (max-width: 850px) {
             .page-container {
-                grid-template-columns: 1fr; /* Drop side columns entirely */
+                grid-template-columns: 1fr; /* Rips down sidebar columns completely */
                 padding: 10px;
-                gap: 10px;
+                gap: 5px;
                 min-height: auto;
             }
 
-            .side-ad {
-                display: none; /* Vaporize vertical ads on smaller screens */
+            .side-tower {
+                display: none !important; /* Discards skyscraper scripts on narrow viewports */
             }
 
-            .mobile-ad {
-                display: flex; /* Activate horizontal top/bottom banner elements */
+            .top-tablet-banner {
+                display: flex; /* Activates 468x60 layout for iPads */
             }
-            
+
+            .bottom-mobile-banner {
+                display: flex; /* Activates 320x50 layout for phones */
+            }
+
             .logo-area h1 { font-size: 2rem; margin-top: 10px; }
         }
     </style>
@@ -216,21 +228,32 @@
 
 <div class="page-container">
 
-    <div class="ad-slot side-ad">
-        <ins class="adsbygoogle"
-             style="display:inline-block;width:160px;height:600px"
-             data-ad-client="ca-pub-4886001552104921"
-             data-ad-slot="1234567890"></ins> <script> (adsbygoogle = window.adsbygoogle || []).push({}); </script>
+    <div class="ad-zone side-tower">
+        <script type="text/javascript">
+            atOptions = {
+                'key' : 'f3995c1d24c50c422f6a7a3faee8bd1e',
+                'format' : 'iframe',
+                'height' : 600,
+                'width' : 160,
+                'params' : {}
+            };
+        </script>
+        <script type="text/javascript" src="//www.highperformanceformat.com/f3995c1d24c50c422f6a7a3faee8bd1e/invoke.js"></script>
     </div>
 
     <div class="hub-center">
 
-        <div class="ad-slot mobile-ad">
-            <ins class="adsbygoogle"
-                 style="display:inline-block;width:320px;height:50px"
-                 data-ad-client="ca-pub-4886001552104921"
-                 data-ad-slot="1111111111"></ins>
-            <script> (adsbygoogle = window.adsbygoogle || []).push({}); </script>
+        <div class="ad-zone top-tablet-banner">
+            <script type="text/javascript">
+                atOptions = {
+                    'key' : '84b2623c46242433f5ba6a873de157ea',
+                    'format' : 'iframe',
+                    'height' : 60,
+                    'width' : 468,
+                    'params' : {}
+                };
+            </script>
+            <script type="text/javascript" src="//www.highperformanceformat.com/84b2623c46242433f5ba6a873de157ea/invoke.js"></script>
         </div>
 
         <div class="logo-area">
@@ -265,33 +288,48 @@
                 <button class="menu-btn btn-share">Share Level</button>
             </div>
 
+            <div class="section-divider" style="margin-bottom: 10px;">
+                <a href="https://ko-fi.com/biglittlethings" target="_blank" class="menu-btn btn-kofi">
+                    <img src="https://ko-fi.com/img/cup-border.svg" alt="Cup" class="kofi-cup"> Support Me!
+                </a>
+            </div>
+
             <a href="logout.html" class="logout-btn">Log out</a>
         </div>
 
-        <div class="ad-slot mobile-ad">
-            <ins class="adsbygoogle"
-                 style="display:inline-block;width:320px;height:50px"
-                 data-ad-client="ca-pub-4886001552104921"
-                 data-ad-slot="2222222222"></ins>
-            <script> (adsbygoogle = window.adsbygoogle || []).push({}); </script>
+        <div class="ad-zone bottom-mobile-banner">
+            <script type="text/javascript">
+                atOptions = {
+                    'key' : 'fb1f43cc4cddc790c0d68ec331d2dc8b',
+                    'format' : 'iframe',
+                    'height' : 50,
+                    'width' : 320,
+                    'params' : {}
+                };
+            </script>
+            <script type="text/javascript" src="//www.highperformanceformat.com/fb1f43cc4cddc790c0d68ec331d2dc8b/invoke.js"></script>
         </div>
 
     </div>
 
-    <div class="ad-slot side-ad">
-        <ins class="adsbygoogle"
-             style="display:inline-block;width:160px;height:600px"
-             data-ad-client="ca-pub-4886001552104921"
-             data-ad-slot="0987654321"></ins>
-        <script> (adsbygoogle = window.adsbygoogle || []).push({}); </script>
+    <div class="ad-zone side-tower">
+        <script type="text/javascript">
+            atOptions = {
+                'key' : 'f3995c1d24c50c422f6a7a3faee8bd1e',
+                'format' : 'iframe',
+                'height' : 600,
+                'width' : 160,
+                'params' : {}
+            };
+        </script>
+        <script type="text/javascript" src="//www.highperformanceformat.com/f3995c1d24c50c422f6a7a3faee8bd1e/invoke.js"></script>
     </div>
 
 </div>
 
 <script>
-    // Placeholder functions to keep your current logic from breaking
     function playLevel(levelId) {
-        console.log("Loading level: " + levelId);
+        console.log("Loading level data string for: " + levelId);
     }
 </script>
 </body>
