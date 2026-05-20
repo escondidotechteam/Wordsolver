@@ -78,7 +78,7 @@
         <div class="chat-box" id="chat-box"></div>
         
         <div class="input-area">
-            <label for="file-input" class="file-label">📁 Image</label>
+            <label for="file-input" class="file-label">Image</label>
             <input type="file" id="file-input" accept="image/*" onchange="handleFileSelect()">
             
             <textarea id="msg-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault(); sendTextMessage();}"></textarea>
@@ -142,7 +142,7 @@
         
         video.currentTime = 0;
         video.play().catch(() => {
-            statusText.innerText = "⚠️ Click Video Play to Unlock File Upload";
+            statusText.innerText = "Click Video Play to Unlock File Upload";
             video.muted = true;
             video.play();
         });
@@ -156,14 +156,14 @@
                 statusText.innerText = `Watching Ad to Unlock Posting Images: ${countdownLeft}s...`;
             } else {
                 clearInterval(interval);
-                statusText.innerText = "🎉 Verification Complete! Click button to post.";
+                statusText.innerText = "Verification Complete! Click button to post.";
                 skipBtn.style.display = "inline-block";
             }
         }, 1000);
 
         video.onended = () => {
             clearInterval(interval);
-            statusText.innerText = "🎉 Verification Complete! Click button to post.";
+            statusText.innerText = "Verification Complete! Click button to post.";
             skipBtn.style.display = "inline-block";
         };
     }
